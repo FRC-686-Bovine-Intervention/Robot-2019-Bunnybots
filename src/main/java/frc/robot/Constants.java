@@ -125,4 +125,14 @@ public class Constants extends ConstantsBase {
 
 
 
+
+
+
+
+
+    //Intake
+    public static double kzoom = 1;
+
+    //Agitator
+    public static double kAgitatorSpeed = 1;
 };
