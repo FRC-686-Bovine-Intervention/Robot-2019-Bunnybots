@@ -18,8 +18,8 @@ import java.util.Map;
 public class Limelight
 {
     // Limelight versions
-    static final int V1 = 0;
-    static final int V2 = 1;
+    public static final int V1 = 0;
+    public static final int V2 = 1;
 
     private static Limelight cargoInstance = new Limelight("limelight-cargo", V1);
     private static Limelight hatchInstance = new Limelight("limelight-hatch", V2);
