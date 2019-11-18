@@ -47,7 +47,7 @@ public class Shooter
 	public static double kQuadEncoderUnitsPerRev = 4*kQuadEncoderCodesPerRev;
 	public static double kQuadEncoderStatusFramePeriod = 0.100; // 100 ms
 
-    public final int    kAllowableError = (int)(0.25 * kQuadEncoderUnitsPerRev);
+    public final int    kAllowableError = (int)rpmToEncoderUnitsPerFrame(10);
 
     public final int kPeakCurrentLimit = 50;
     public final int kPeakCurrentDuration = 200;
@@ -57,6 +57,13 @@ public class Shooter
     public double kLowGoalHeight = 41.5;
     public double kCameraHeight = 16;
     public double kCameraAngle = 35;
+
+    // Distance vs. RPM Tables
+    public double highGoalTable[][] = {
+        {36,    2000},
+        {48,    3000},
+        {60,    4000} };
+
 
     public Shooter() 
     {
