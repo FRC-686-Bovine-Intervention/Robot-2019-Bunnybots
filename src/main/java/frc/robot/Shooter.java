@@ -27,6 +27,7 @@ public class Shooter
     //====================================================
     public TalonSRX shooterMotor;
     public Limelight camera;
+    public double speed;
 
     //====================================================
     // Constants
@@ -56,13 +57,21 @@ public class Shooter
     public double kHighGoalHeight = 76.75;
     public double kLowGoalHeight = 41.5;
     public double kCameraHeight = 16;
-    public double kCameraAngle = 35;
+    public double kCameraAngle = 42.5;
+    public double kFrontToCameraDist = 7;
 
     // Distance vs. RPM Tables
     public double highGoalTable[][] = {
-        {36,    2000},
-        {48,    3000},
-        {60,    4000} };
+        {30,    2900},
+        {39,    2750},
+        {47,    2700},
+        {56,    2700},
+        {59,    2750},
+        {79,    2825},   };
+
+    public double lowGoalTable[][] = {
+        {56,    2050},
+        {43,    1950} };
 
 
     public Shooter() 
@@ -125,10 +134,18 @@ public class Shooter
     public void run()
     {
         double targetDeg = camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees;
-        double distance = handleDistance(camera.getTargetVerticalAngleRad(), false);
+        double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
         SmartDashboard.putNumber("Target Degree", targetDeg);
         SmartDashboard.putNumber("Distance To Target", distance);
         SmartDashboard.putBoolean("Found Target", camera.getIsTargetFound());
+        int keyL = getLinear(distance);
+        if (camera.getIsTargetFound())
+        {
+            speed = handleLinear(distance, highGoalTable[keyL][0], highGoalTable[keyL+1][0], highGoalTable[keyL][1], highGoalTable[keyL+1][1]);
+        }
+        setTarget(Math.min(speed, 3500));
+        SmartDashboard.putNumber("key", keyL);
+        SmartDashboard.putNumber("Shooter Speed", speed);
     }
 
     public double handleDistance (double angleRad, boolean lowGoal)
@@ -141,6 +158,25 @@ public class Shooter
         {
             return (kHighGoalHeight-kCameraHeight)/(Math.tan(angleRad+(kCameraAngle * Vector2d.degreesToRadians)));
         }
+    }
+
+    public int getLinear (double d)
+    {
+        double distance = Math.max(Math.min(d, highGoalTable[highGoalTable.length-1][0]), highGoalTable[0][0]);
+        int k;
+        for (k=0;k<highGoalTable.length;k++)
+        {
+            if (distance <= highGoalTable[k][0])
+            {
+                break;
+            }
+        }
+        return Math.max(k-1, 0);
+    }
+
+    public double handleLinear (double d, double dL, double dH, double sL, double sH)
+    {
+        return (sH-sL)*Math.min((d-dL)/(dH-dL),1)+sL;
     }
     
 	private final DataLogger logger = new DataLogger()

@@ -93,8 +93,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
-    shooter.setTarget(rpm);
+    // double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
+    // shooter.setTarget(rpm);
     shooter.run();
   }
 
