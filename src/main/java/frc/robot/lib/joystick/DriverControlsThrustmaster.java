@@ -28,6 +28,8 @@ public class DriverControlsThrustmaster extends DriverControlsBase
     public static JoystickBase stick;
     // public static JoystickBase rStick;
     public static JoystickBase buttonBoard;
+    public static JoystickBase lStick;
+
 
     public static SteeringBase steeringControls;
 
@@ -63,19 +65,10 @@ public class DriverControlsThrustmaster extends DriverControlsBase
     {
         switch (_control)
         {
-            case VISION_ASSIST:                 return stick.getButton(Thrustmaster.kLeftThumbButton);
-            case HATCH_DEPLOY:                  return false;
-            case HATCH_SHOOT:                   return false;
-            case CARGO_INTAKE:                  return stick.getButton(Thrustmaster.kBottomThumbButton);
-            case CARGO_OUTTAKE:                 return stick.getButton(Thrustmaster.kTriggerButton);
-            case CARGO_INTAKE_DEPOT_HEIGHT:     return stick.getButton(Thrustmaster.kRightThumbButton);
-            case CARGO_INTAKE_ROCKET_HEIGHT:    return buttonBoard.getButton(kCargoIntakeRocketButton);
-            case CARGO_INTAKE_CARGO_HEIGHT:     return buttonBoard.getButton(kCargoIntakeCargoShipButton);
-            case DEFENSE:                       return buttonBoard.getButton(kDefenseButton);
-            case CLIMB_PREPARE:                 return buttonBoard.getButton(kClimbingStartButton);
-            case CLIMB_EXTEND:                  return buttonBoard.getButton(kClimbingExtendButton);
-            case CLIMB_RETRACT:                 return buttonBoard.getButton(kClimbingRetractButton);
-            case EMERGENCY_ZEROING:             return buttonBoard.getButton(kEmergencyZeroingAxis);
+            case INTAKE:                        return false;
+            case OUTTAKE:                       return false;
+            case HIGH_SHOOT:                    return lStick.getButton(Thrustmaster.kTriggerButton);
+            case LOW_SHOOT:                     return false;
             case QUICK_TURN:                    return false;
             default:                            return false;
         }

@@ -15,6 +15,7 @@ public class DriverControlsXbox extends DriverControlsBase
 
     public static JoystickBase stick;
     public static JoystickBase buttonBoard;
+    public static JoystickBase lStick;
 
     public static SteeringBase steeringControls;
 
@@ -50,19 +51,10 @@ public class DriverControlsXbox extends DriverControlsBase
     {
         switch (_control)
         {
-            case VISION_ASSIST:                 return stick.getButton(Xbox.kButtonA);
-            case HATCH_DEPLOY:                  return stick.getButton(Xbox.kButtonRB);
-            case HATCH_SHOOT:                   return stick.getButton(Xbox.kRTriggerAxis);
-            case CARGO_INTAKE:                  return stick.getButton(Xbox.kButtonLB);
-            case CARGO_OUTTAKE:                 return stick.getButton(Xbox.kLTriggerAxis);
-            case CARGO_INTAKE_DEPOT_HEIGHT:     return stick.getButton(Xbox.kButtonX);
-            case CARGO_INTAKE_ROCKET_HEIGHT:    return buttonBoard.getButton(kCargoIntakeRocketButton);
-            case CARGO_INTAKE_CARGO_HEIGHT:     return buttonBoard.getButton(kCargoIntakeCargoShipButton);
-            case DEFENSE:                       return buttonBoard.getButton(kDefenseButton);
-            case CLIMB_PREPARE:                 return buttonBoard.getButton(kClimbingStartButton);
-            case CLIMB_EXTEND:                  return buttonBoard.getButton(kClimbingExtendButton);
-            case CLIMB_RETRACT:                 return buttonBoard.getButton(kClimbingRetractButton);
-            case EMERGENCY_ZEROING:             return buttonBoard.getButton(kEmergencyZeroingAxis);
+            case INTAKE:                        return false;
+            case OUTTAKE:                       return false;
+            case HIGH_SHOOT:                    return lStick.getButton(Thrustmaster.kTriggerButton);
+            case LOW_SHOOT:                     return false;
             case QUICK_TURN:                    return false;
             default:                            return false;
         }

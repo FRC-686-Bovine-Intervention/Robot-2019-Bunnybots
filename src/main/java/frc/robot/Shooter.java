@@ -5,7 +5,10 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.lib.joystick.DriverControlsEnum;
+import frc.robot.lib.joystick.SelectedDriverControlsReversible;
 import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Vector2d;
@@ -54,6 +57,8 @@ public class Shooter
     public final int kPeakCurrentDuration = 200;
     public final int kContinuousCurrentLimit = 30;
 
+    private Joystick joy1 = new Joystick(0);
+
     public double kHighGoalHeight = 76.75;
     public double kLowGoalHeight = 41.5;
     public double kCameraHeight = 16;
@@ -70,8 +75,12 @@ public class Shooter
         {79,    2825},   };
 
     public double lowGoalTable[][] = {
-        {56,    2050},
-        {43,    1950} };
+        {43,    1950},
+        {56,    2050}, 
+        {72,    1800},
+        {88,    1890},
+        {105,   2000},
+        {117,   2175}};
 
 
     public Shooter() 
@@ -133,17 +142,32 @@ public class Shooter
 
     public void run()
     {
+        SelectedDriverControlsReversible driverControls = SelectedDriverControlsReversible.getInstance();
         double targetDeg = camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees;
         double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
         SmartDashboard.putNumber("Target Degree", targetDeg);
         SmartDashboard.putNumber("Distance To Target", distance);
         SmartDashboard.putBoolean("Found Target", camera.getIsTargetFound());
-        int keyL = getLinear(distance);
+        boolean targetLowGoal = driverControls.getBoolean(DriverControlsEnum.LOW_SHOOT);
+        double goalTable[][] = handleGoalTable(targetLowGoal, highGoalTable, lowGoalTable);
+
+        int keyL = getLinear(distance, goalTable);
         if (camera.getIsTargetFound())
         {
-            speed = handleLinear(distance, highGoalTable[keyL][0], highGoalTable[keyL+1][0], highGoalTable[keyL][1], highGoalTable[keyL+1][1]);
+            speed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
         }
-        setTarget(Math.min(speed, 3500));
+        if (!SmartDashboard.getBoolean("Shooter Debug", false))
+        {
+            if (driverControls.getBoolean(DriverControlsEnum.HIGH_SHOOT))
+            {
+                setTarget(Math.min(speed, 3500));
+            }
+            else
+            {
+                setTarget(0);
+            }
+        }
+        SmartDashboard.putNumber("KeyDistance", goalTable[keyL][1]);
         SmartDashboard.putNumber("key", keyL);
         SmartDashboard.putNumber("Shooter Speed", speed);
     }
@@ -160,13 +184,25 @@ public class Shooter
         }
     }
 
-    public int getLinear (double d)
+    public double[][] handleGoalTable (boolean lowGoal, double[][] falseTable, double[][] trueTable)
     {
-        double distance = Math.max(Math.min(d, highGoalTable[highGoalTable.length-1][0]), highGoalTable[0][0]);
-        int k;
-        for (k=0;k<highGoalTable.length;k++)
+        if (lowGoal)
         {
-            if (distance <= highGoalTable[k][0])
+            return trueTable;
+        }
+        else
+        {
+            return falseTable;
+        }
+    }
+
+    public int getLinear (double d, double table[][])
+    {
+        double distance = Math.max(Math.min(d, table[table.length-1][0]), table[0][0]);
+        int k;
+        for (k=0;k<table.length;k++)
+        {
+            if (distance <= table[k][0])
             {
                 break;
             }

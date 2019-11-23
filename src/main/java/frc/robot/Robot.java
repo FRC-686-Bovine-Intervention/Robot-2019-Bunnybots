@@ -40,6 +40,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Auto choices", m_chooser);
     shooter = new Shooter();
     SmartDashboard.putNumber("ShooterRPM", 0);
+    SmartDashboard.putBoolean("Shooter Debug", false);
   }
 
   /**
@@ -93,8 +94,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    // double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
-    // shooter.setTarget(rpm);
+    if (SmartDashboard.getBoolean("Shooter Debug", false))
+    {
+      double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
+      shooter.setTarget(rpm);
+    }
     shooter.run();
   }
 
