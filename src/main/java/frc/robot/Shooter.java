@@ -5,10 +5,11 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.lib.joystick.DriverAxisEnum;
 import frc.robot.lib.joystick.DriverControlsEnum;
-import frc.robot.lib.joystick.SelectedDriverControlsReversible;
+import frc.robot.lib.joystick.SelectedDriverControls;
+import frc.robot.lib.joystick.Thrustmaster;
 import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Vector2d;
@@ -56,8 +57,7 @@ public class Shooter
     public final int kPeakCurrentLimit = 50;
     public final int kPeakCurrentDuration = 200;
     public final int kContinuousCurrentLimit = 30;
-
-    private Joystick joy1 = new Joystick(0);
+    public final int kSliderMax = 200;
 
     public double kHighGoalHeight = 76.75;
     public double kLowGoalHeight = 41.5;
@@ -142,23 +142,24 @@ public class Shooter
 
     public void run()
     {
-        SelectedDriverControlsReversible driverControls = SelectedDriverControlsReversible.getInstance();
+        SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
         double targetDeg = camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees;
         double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
         SmartDashboard.putNumber("Target Degree", targetDeg);
-        SmartDashboard.putNumber("Distance To Target", distance);
         SmartDashboard.putBoolean("Found Target", camera.getIsTargetFound());
-        boolean targetLowGoal = driverControls.getBoolean(DriverControlsEnum.LOW_SHOOT);
+        boolean targetLowGoal = driverControls.getBoolean(DriverControlsEnum.TARGET_LOW);
         double goalTable[][] = handleGoalTable(targetLowGoal, highGoalTable, lowGoalTable);
-
+        double shooterCorrection = -driverControls.getAxis(DriverAxisEnum.SHOOTER_SPEED_CORRECTION)*kSliderMax;
         int keyL = getLinear(distance, goalTable);
+        double nominalSpeed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
         if (camera.getIsTargetFound())
         {
-            speed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
+            speed = nominalSpeed + shooterCorrection;
+            SmartDashboard.putNumber("Distance To Target", distance);
         }
         if (!SmartDashboard.getBoolean("Shooter Debug", false))
         {
-            if (driverControls.getBoolean(DriverControlsEnum.HIGH_SHOOT))
+            if (driverControls.getBoolean(DriverControlsEnum.SHOOT))
             {
                 setTarget(Math.min(speed, 3500));
             }
@@ -170,6 +171,9 @@ public class Shooter
         SmartDashboard.putNumber("KeyDistance", goalTable[keyL][1]);
         SmartDashboard.putNumber("key", keyL);
         SmartDashboard.putNumber("Shooter Speed", speed);
+        SmartDashboard.putNumber("CorrectionValue", shooterCorrection);
+        SmartDashboard.putNumber("NominalSpeed", nominalSpeed);
+
     }
 
     public double handleDistance (double angleRad, boolean lowGoal)

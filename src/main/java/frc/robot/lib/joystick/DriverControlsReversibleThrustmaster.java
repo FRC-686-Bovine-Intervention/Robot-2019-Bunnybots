@@ -66,10 +66,19 @@ public class DriverControlsReversibleThrustmaster extends ReversibleDriverContro
         {
             case INTAKE:                        return false;
             case OUTTAKE:                       return false;
-            case HIGH_SHOOT:                    return lStick.getButton(Thrustmaster.kTriggerButton);
-            case LOW_SHOOT:                     return lStick.getButton(Thrustmaster.kBottomThumbButton);
+            case SHOOT:                         return lStick.getButton(Thrustmaster.kTriggerButton) || lStick.getButton(Thrustmaster.kBottomThumbButton);
+            case TARGET_LOW:                    return lStick.getButton(Thrustmaster.kBottomThumbButton) && !lStick.getButton(Thrustmaster.kTriggerButton);
             case QUICK_TURN:                    return false;
             default:                            return false;
+        }
+    }
+
+    public double getAxis( DriverAxisEnum _axis ) 
+    {
+        switch (_axis)
+        {
+            case SHOOTER_SPEED_CORRECTION:      return lStick.getAxis(Thrustmaster.kSliderAxis);
+            default:                            return 0.0;
         }
     }
 

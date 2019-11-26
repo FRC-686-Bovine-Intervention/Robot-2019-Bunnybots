@@ -38,7 +38,7 @@ public class SelectedDriverControls
     // pass-thru gets
     public DriveCommand getDriveCommand() { return driverControls.getDriveCommand(); }
     public boolean getBoolean( DriverControlsEnum _control ) { return driverControls.getBoolean(_control); }
-    
+    public double getAxis(DriverAxisEnum _axis ) { return driverControls.getAxis(_axis); }
     public DataLogger getLogger() { return driverControls.getLogger(); }
 
 }

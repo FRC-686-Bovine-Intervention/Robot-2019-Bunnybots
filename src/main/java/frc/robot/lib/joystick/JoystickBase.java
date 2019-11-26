@@ -31,6 +31,11 @@ public abstract class JoystickBase extends Joystick
         return getRawAxis(_axis);
     }
 
+    public boolean getAxisAsButton(int _axis)
+    {
+        return(getRawAxis(_axis) > 0.5);
+    }
+
     // public int getPOV() already exists in Joystick class
 
 

@@ -21,30 +21,21 @@ public class DriverControlsThrustmaster extends DriverControlsBase
     
     
     // Joystick Port Constants
-    public static int kLeftStickPort = 0;
-    // public static int kRightStickPort = 1;
-    public static int kButtonBoardPort = 2;
+    public static int kControllerPort = 0;
+    public static int kButtonBoardPort = 1;
 
-    public static JoystickBase stick;
-    // public static JoystickBase rStick;
+    public static JoystickBase controller;
     public static JoystickBase buttonBoard;
-    public static JoystickBase lStick;
 
 
     public static SteeringBase steeringControls;
 
     // button board constants
-    public static int kCargoIntakeRocketButton =    ButtonBoard.kButtonB;
-    public static int kCargoIntakeCargoShipButton = ButtonBoard.kButtonA;
-    public static int kDefenseButton =              ButtonBoard.kButtonRB;
-    public static int kClimbingStartButton =        ButtonBoard.kButtonLB;
-    public static int kClimbingExtendButton =       ButtonBoard.kButtonX;
-    public static int kClimbingRetractButton =      ButtonBoard.kButtonY;
-    public static int kEmergencyZeroingAxis =       ButtonBoard.kButtonSR;
-
+    // public static int kCargoIntakeRocketButton =    ButtonBoard.kButtonB;
+ 
     public DriverControlsThrustmaster() 
     {
-        stick = new Thrustmaster(kLeftStickPort);
+        controller = new Thrustmaster(kControllerPort);
         buttonBoard = new ButtonBoard(kButtonBoardPort);
 
         double throttleDeadband =     0.02;
@@ -52,7 +43,7 @@ public class DriverControlsThrustmaster extends DriverControlsBase
         NonLinearityEnum throttleNonLinearity = NonLinearityEnum.SQUARED;
         NonLinearityEnum turnNonLinearity =     NonLinearityEnum.SQUARED;
 
-        steeringControls = new TmArcadeDriveSteering(stick, new DeadbandNonLinearity(throttleDeadband, turnDeadband, throttleNonLinearity, turnNonLinearity));
+        steeringControls = new TmArcadeDriveSteering(controller, new DeadbandNonLinearity(throttleDeadband, turnDeadband, throttleNonLinearity, turnNonLinearity));
     }
 
     public DriveCommand getDriveCommand() 
@@ -67,14 +58,21 @@ public class DriverControlsThrustmaster extends DriverControlsBase
         {
             case INTAKE:                        return false;
             case OUTTAKE:                       return false;
-            case HIGH_SHOOT:                    return lStick.getButton(Thrustmaster.kTriggerButton);
-            case LOW_SHOOT:                     return false;
+            case SHOOT:                         return controller.getButton(Thrustmaster.kTriggerButton) || controller.getButton(Thrustmaster.kBottomThumbButton);
+            case TARGET_LOW:                    return controller.getButton(Thrustmaster.kBottomThumbButton) && !controller.getButton(Thrustmaster.kTriggerButton);
             case QUICK_TURN:                    return false;
             default:                            return false;
         }
     }
 
-
+    public double getAxis( DriverAxisEnum _axis ) 
+    {
+        switch (_axis)
+        {
+            case SHOOTER_SPEED_CORRECTION:      return controller.getAxis(Thrustmaster.kSliderAxis);
+            default:                            return 0.0;
+        }
+    }
 
 
     public DataLogger getLogger() { return logger; }
@@ -84,7 +82,7 @@ public class DriverControlsThrustmaster extends DriverControlsBase
         @Override
         public void log()
         {
-            if (stick != null)              { stick.getLogger().log(); }
+            if (controller != null)         { controller.getLogger().log(); }
             if (buttonBoard != null)        { buttonBoard.getLogger().log(); }
             if (steeringControls != null)   { steeringControls.getLogger().log(); }
         }

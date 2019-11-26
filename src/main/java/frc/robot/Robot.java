@@ -10,6 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.lib.joystick.SelectedDriverControls;
+import frc.robot.lib.joystick.SelectedDriverControlsReversible;
 import frc.robot.subsystems.Agitator;
 import frc.robot.subsystems.Intake;
 
@@ -25,9 +27,13 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  SelectedDriverControls selectedDriverControls = SelectedDriverControls.getInstance();
+
   private Shooter shooter;
   private Intake intake = new Intake();
   private Agitator agitator = new Agitator();
+  SmartDashboardInteractions smartDashboardInteractions = SmartDashboardInteractions.getInstance();
+
 
   /**
    * This function is run when the robot is first started up and should be
@@ -35,6 +41,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -69,6 +76,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
+    selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
+
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
@@ -94,6 +103,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
+
     if (SmartDashboard.getBoolean("Shooter Debug", false))
     {
       double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
