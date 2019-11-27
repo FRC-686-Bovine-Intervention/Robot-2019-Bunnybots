@@ -2,6 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.auto.AutoModeBase;
+import frc.robot.auto.modes.ShooterMode;
+import frc.robot.auto.modes.StandStillMode;
 import frc.robot.lib.joystick.DriverControlsBase;
 import frc.robot.lib.joystick.DriverControlsThrustmaster;
 import frc.robot.lib.joystick.DriverControlsXbox;
@@ -55,6 +58,12 @@ public class SmartDashboardInteractions
         startDelayChooser.addOption(StartDelayOption.DELAY_4_SEC.toString(), StartDelayOption.DELAY_4_SEC);
         startDelayChooser.addOption(StartDelayOption.DELAY_5_SEC.toString(), StartDelayOption.DELAY_5_SEC);
         SmartDashboard.putData("Auto Start Delay", startDelayChooser);
+
+
+        autoModeChooser = new SendableChooser<AutoModeOption>();
+        autoModeChooser.setDefaultOption(AutoModeOption.SHOOTER_AUTO.toString(), AutoModeOption.SHOOTER_AUTO);
+        autoModeChooser.addOption(AutoModeOption.SHOOTER_AUTO.toString(), AutoModeOption.SHOOTER_AUTO);
+        SmartDashboard.putData("Auto Selection", autoModeChooser);
     }
 
         
@@ -130,6 +139,36 @@ public class SmartDashboardInteractions
     public double getStartDelay()
     {
 		return startDelayChooser.getSelected().delaySec;
+    }
+
+
+
+    SendableChooser<AutoModeOption> autoModeChooser;
+
+    enum AutoModeOption
+    {
+        SHOOTER_AUTO("Shooter Auto");
+    
+        public final String name;
+    
+        AutoModeOption(String name) {
+            this.name = name;
+        }
+    }
+
+    public AutoModeBase getAutoModeSelection()
+    {
+    	AutoModeOption autoMode = (AutoModeOption)autoModeChooser.getSelected();
+
+    	switch(autoMode)
+    	{
+        case SHOOTER_AUTO:
+            return new ShooterMode(); 
+			
+    	default:
+            System.out.println("ERROR: unexpected auto mode: " + autoMode);
+			return new StandStillMode();
+    	}
     }
     
 }

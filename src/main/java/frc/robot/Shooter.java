@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.joystick.DriverAxisEnum;
 import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
-import frc.robot.lib.joystick.Thrustmaster;
 import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Vector2d;
@@ -145,12 +144,10 @@ public class Shooter
         SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
         double targetDeg = camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees;
         double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
-        SmartDashboard.putNumber("Target Degree", targetDeg);
-        SmartDashboard.putBoolean("Found Target", camera.getIsTargetFound());
         boolean targetLowGoal = driverControls.getBoolean(DriverControlsEnum.TARGET_LOW);
         double goalTable[][] = handleGoalTable(targetLowGoal, highGoalTable, lowGoalTable);
-        double shooterCorrection = -driverControls.getAxis(DriverAxisEnum.SHOOTER_SPEED_CORRECTION)*kSliderMax;
         int keyL = getLinear(distance, goalTable);
+        double shooterCorrection = -driverControls.getAxis(DriverAxisEnum.SHOOTER_SPEED_CORRECTION)*kSliderMax;
         double nominalSpeed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
         if (camera.getIsTargetFound())
         {
@@ -161,19 +158,32 @@ public class Shooter
         {
             if (driverControls.getBoolean(DriverControlsEnum.SHOOT))
             {
-                setTarget(Math.min(speed, 3500));
+                setTarget(speed);
             }
             else
             {
                 setTarget(0);
             }
         }
-        SmartDashboard.putNumber("KeyDistance", goalTable[keyL][1]);
-        SmartDashboard.putNumber("key", keyL);
         SmartDashboard.putNumber("Shooter Speed", speed);
         SmartDashboard.putNumber("CorrectionValue", shooterCorrection);
         SmartDashboard.putNumber("NominalSpeed", nominalSpeed);
+        SmartDashboard.putNumber("Target Degree", targetDeg);
+        SmartDashboard.putBoolean("Found Target", camera.getIsTargetFound());
+    }
 
+    public void shoot(boolean lowGoal)
+    {
+        double goalTable[][] = handleGoalTable(lowGoal, highGoalTable, lowGoalTable);
+        double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
+        int keyL = getLinear(distance, goalTable);
+        double nominalSpeed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
+        setTarget(nominalSpeed);
+    }
+
+    public void stop() // You shall not PAAAAASSSSS -Gandalf the Code
+    {
+        setTarget(0);
     }
 
     public double handleDistance (double angleRad, boolean lowGoal)
@@ -232,5 +242,5 @@ public class Shooter
 	public DataLogger getLogger()
 	{
 		return logger;
-	}    
+    }    
 }

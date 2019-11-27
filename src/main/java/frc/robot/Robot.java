@@ -8,10 +8,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.auto.AutoModeExecuter;
 import frc.robot.lib.joystick.SelectedDriverControls;
-import frc.robot.lib.joystick.SelectedDriverControlsReversible;
+import frc.robot.lib.util.DataLogController;
+import frc.robot.lib.util.DataLogger;
 import frc.robot.subsystems.Agitator;
 import frc.robot.subsystems.Intake;
 
@@ -28,11 +31,15 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   SelectedDriverControls selectedDriverControls = SelectedDriverControls.getInstance();
+  private AutoModeExecuter autoModeExecuter = null;
 
   private Shooter shooter;
   private Intake intake = new Intake();
   private Agitator agitator = new Agitator();
   SmartDashboardInteractions smartDashboardInteractions = SmartDashboardInteractions.getInstance();
+
+  DataLogController robotLogger;
+  OperationalMode operationalMode = OperationalMode.getInstance();
 
 
   /**
@@ -48,6 +55,9 @@ public class Robot extends TimedRobot {
     shooter = new Shooter();
     SmartDashboard.putNumber("ShooterRPM", 0);
     SmartDashboard.putBoolean("Shooter Debug", false);
+    robotLogger = DataLogController.getRobotLogController();
+    robotLogger.register(this.getLogger());
+
   }
 
   /**
@@ -75,11 +85,30 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+
+    operationalMode.set(OperationalMode.OperationalModeEnum.AUTONOMOUS);
+    boolean logToFile = false;
+    boolean logToSmartDashboard = true;
+    robotLogger.setOutputMode(logToFile, logToSmartDashboard);
+
+		Shuffleboard.startRecording();
+
+
+
     m_autoSelected = m_chooser.getSelected();
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
 
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    if (autoModeExecuter != null)
+			{
+    			autoModeExecuter.stop();
+    		}
+    		autoModeExecuter = null;
+    		
+			autoModeExecuter = new AutoModeExecuter();
+      autoModeExecuter.setAutoMode( smartDashboardInteractions.getAutoModeSelection() );
+      autoModeExecuter.start();
   }
 
   /**
@@ -119,4 +148,16 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+
+  private final DataLogger logger = new DataLogger()
+    {
+        @Override
+        public void log()
+        {
+			put("OperationalMode", operationalMode.get().toString());
+        }
+    };
+    
+    public DataLogger getLogger() { return logger; }
+
 }
