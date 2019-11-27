@@ -26,6 +26,8 @@ public class Constants extends ConstantsBase {
     public static int kTalonTimeoutMs = 5; // ms
     public static int kTalonPidIdx = 0; // 0 for non-cascaded PIDs, 1 for cascaded PIDs
     
+    public static double kIntakeSpeed = 0.5; 
+    
     public static double kNominalBatteryVoltage = 12.0;
 
 
@@ -34,11 +36,10 @@ public class Constants extends ConstantsBase {
     public static int kLeftMotorSlave1TalonId =     2;
     public static int kRightMotorMasterTalonId =    3;
     public static int kRightMotorSlave1TalonId =    4;
-    public static int kCargoDeployMasterTalonId =   5;   
-    public static int kCargoDeploySlaveTalonId =    6;   
-    public static int kCargoIntakeTalonId =         7;
-    public static int kHatchDeployTalonId =         8;
-    public static int kClimberDriveMotorTalonId =   12;
+    public static int kShooterTalonId =   5; 
+    public static int kAgitatorTalonId =   6;   
+    public static int kIntakeTalonId = 7;  
+    
 
     // RoboRIO DIO ports
     public static int kBallDetectSensorPort = 0;  

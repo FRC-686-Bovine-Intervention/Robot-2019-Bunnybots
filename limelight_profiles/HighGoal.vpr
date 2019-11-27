@@ -28,7 +28,7 @@ hue_max:72
 hue_min:34
 image_flip:0
 image_source:0
-img_to_show:1
+img_to_show:0
 intersection_filter:0
 pipeline_led_enabled:1
 pipeline_res:0
@@ -45,7 +45,7 @@ solve3d_error:8
 solve3d_guess:0
 solve3d_iterations:50
 solve3d_precise:0
-val_max:226
-val_min:60
+val_max:215
+val_min:134
 y_max:1.000000
 y_min:-1.000000
