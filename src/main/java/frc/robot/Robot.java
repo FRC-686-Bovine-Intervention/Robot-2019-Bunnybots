@@ -11,8 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.joystick.SelectedDriverControls;
-import frc.robot.lib.joystick.SelectedDriverControlsReversible;
-import frc.robot.subsystems.Agitator;
+import frc.robot.Agitator;
 import frc.robot.subsystems.Intake;
 
 /**

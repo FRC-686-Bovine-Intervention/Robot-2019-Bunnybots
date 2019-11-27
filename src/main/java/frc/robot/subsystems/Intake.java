@@ -5,16 +5,12 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import frc.robot.command_status.DriveCommand;
-import frc.robot.lib.util.DataLogger;
-import frc.robot.lib.util.PIDController;
-import frc.robot.loops.DriveLoop;
-
+import frc.robot.Constants;
 
 
 public class Intake extends Subsystem 
 {
-    public TalonSRX intakeMotor = new TalonSRX(/*deviceNumber*/0);
+    public TalonSRX intakeMotor = new TalonSRX(Constants.kIntakeTalonId);
 	// singleton class
 	private static Intake instance = null;
 	public static Intake getInstance() 
@@ -25,9 +21,9 @@ public class Intake extends Subsystem
 		return instance;
 	}
 
-    public void setIntake(double kzoom)
+    public void setIntake()
     {
-        intakeMotor.set(ControlMode.PercentOutput, kzoom);
+        intakeMotor.set(ControlMode.PercentOutput, Constants.kIntakeSpeed);
     }
 
     @Override
