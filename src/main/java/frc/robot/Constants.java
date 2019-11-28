@@ -37,7 +37,7 @@ public class Constants extends ConstantsBase {
     public static int kRightMotorMasterTalonId =    3;
     public static int kRightMotorSlave1TalonId =    4;
     public static int kShooterTalonId =   5; 
-    public static int kAgitatorTalonId =   6;   
+    public static int kAgitatorTalonId =   3;   
     public static int kIntakeTalonId = 7;  
     
 
@@ -54,18 +54,6 @@ public class Constants extends ConstantsBase {
     public static int kHatchEjectChannel =          4;  // old stuff
     public static int kHatchExtendChannel =         4;
     public static int kHatchGrabChannel =           5;
-
-
- 
- 
-
-
-
-
- 
-
-   
-    
 
     // Gyro
     public enum GyroSelectionEnum { BNO055, NAVX, PIGEON; }

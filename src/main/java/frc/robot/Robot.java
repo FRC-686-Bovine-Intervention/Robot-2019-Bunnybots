@@ -15,7 +15,6 @@ import frc.robot.auto.AutoModeExecuter;
 import frc.robot.lib.joystick.SelectedDriverControls;
 import frc.robot.lib.util.DataLogController;
 import frc.robot.lib.util.DataLogger;
-import frc.robot.subsystems.Agitator;
 import frc.robot.subsystems.Intake;
 
 /**
@@ -34,13 +33,12 @@ public class Robot extends TimedRobot {
   private AutoModeExecuter autoModeExecuter = null;
 
   private Shooter shooter;
-  private Intake intake = new Intake();
-  private Agitator agitator = new Agitator();
+  private Intake intake = Intake.getInstance();
+  private Agitator agitator = Agitator.getInstance();
   SmartDashboardInteractions smartDashboardInteractions = SmartDashboardInteractions.getInstance();
 
   DataLogController robotLogger;
   OperationalMode operationalMode = OperationalMode.getInstance();
-
 
   /**
    * This function is run when the robot is first started up and should be
@@ -48,16 +46,20 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    SmartDashboard.putNumber("Pid",0);
+    SmartDashboard.putNumber("pId",0);
+    SmartDashboard.putNumber("piD",0);
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    shooter = new Shooter();
+    shooter = Shooter.getInstance();
     SmartDashboard.putNumber("ShooterRPM", 0);
     SmartDashboard.putBoolean("Shooter Debug", false);
+    SmartDashboard.putNumber("AgitatorRPM", 0);
+    SmartDashboard.putBoolean("Agitator Debug", false);
     robotLogger = DataLogController.getRobotLogController();
     robotLogger.register(this.getLogger());
-
   }
 
   /**
@@ -70,6 +72,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+
   }
 
   /**
@@ -93,8 +96,6 @@ public class Robot extends TimedRobot {
 
 		Shuffleboard.startRecording();
 
-
-
     m_autoSelected = m_chooser.getSelected();
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
 
@@ -107,10 +108,9 @@ public class Robot extends TimedRobot {
     		autoModeExecuter = null;
     		
 			autoModeExecuter = new AutoModeExecuter();
-      autoModeExecuter.setAutoMode( smartDashboardInteractions.getAutoModeSelection() );
+      autoModeExecuter.setAutoMode(smartDashboardInteractions.getAutoModeSelection());
       autoModeExecuter.start();
   }
-
   /**
    * This function is called periodically during autonomous.
    */
@@ -126,20 +126,31 @@ public class Robot extends TimedRobot {
         break;
     }
   }
-
+  @Override
+  public void teleopInit() {
+    double Pid = SmartDashboard.getNumber("Pid", 100);
+    double pId = SmartDashboard.getNumber("pId", 0);
+    double piD = SmartDashboard.getNumber("piD", 0);
+    agitator.setPIDValues(Pid, pId, piD);
+  }
   /**
    * This function is called periodically during operator control.
    */
   @Override
   public void teleopPeriodic() {
-    selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
-
+    selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
+    agitator.run();
     if (SmartDashboard.getBoolean("Shooter Debug", false))
     {
       double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
       shooter.setTarget(rpm);
     }
     shooter.run();
+    if (SmartDashboard.getBoolean("Agitator Debug", false))
+    {
+      double agitatorSet = SmartDashboard.getNumber("AgitatorRPM", 0);
+      agitator.setTarget(agitatorSet);
+    }
   }
 
   /**
