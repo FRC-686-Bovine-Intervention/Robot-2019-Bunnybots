@@ -149,7 +149,7 @@ public class Robot extends TimedRobot {
     if (SmartDashboard.getBoolean("Agitator Debug", false))
     {
       double agitatorSet = SmartDashboard.getNumber("AgitatorRPM", 0);
-      agitator.setTarget(agitatorSet);
+      agitator.setSpeed(agitatorSet);
     }
   }
 
