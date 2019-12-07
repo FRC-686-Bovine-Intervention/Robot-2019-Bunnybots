@@ -6,11 +6,15 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import frc.robot.Constants;
+import frc.robot.lib.joystick.DriverControlsBase;
+import frc.robot.lib.joystick.DriverControlsEnum;
+import frc.robot.lib.joystick.SelectedDriverControls;
+import frc.robot.loops.Loop;
 
 
-public class Intake extends Subsystem 
+public class Intake extends Subsystem implements Loop
 {
-    public TalonSRX intakeMotor = new TalonSRX(Constants.kIntakeTalonId);
+    public TalonSRX intakeMotor;
 	// singleton class
 	private static Intake instance = null;
 	public static Intake getInstance() 
@@ -19,16 +23,57 @@ public class Intake extends Subsystem
 			instance = new Intake();
 		}
 		return instance;
-	}
+    }
 
-    public void setIntake()
+
+    public Intake(){
+        intakeMotor = new TalonSRX(Constants.kIntakeTalonId);
+
+       // Factory default hardware to prevent unexpected behavior
+       intakeMotor.configFactoryDefault();
+
+    }
+    
+
+    //Loop functions
+    @Override
+    public void onStart() {
+        stop();
+    }
+
+    @Override
+    public void onLoop() {
+        DriverControlsBase driverControls = SelectedDriverControls.getInstance().get();
+
+        if (driverControls.getBoolean(DriverControlsEnum.INTAKE))
+        {
+            set(+Constants.kIntakeSpeed);
+        }
+        else if (driverControls.getBoolean(DriverControlsEnum.OUTTAKE))
+        {
+            set(-Constants.kIntakeSpeed);
+        }
+        else 
+        {
+            stop();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        stop();
+    }
+
+
+
+    public void set(double speed)
     {
-        intakeMotor.set(ControlMode.PercentOutput, Constants.kIntakeSpeed);
+        intakeMotor.set(ControlMode.PercentOutput, speed);
     }
 
     @Override
     public void stop() {
-        intakeMotor.set(ControlMode.PercentOutput, 0);
+        set(0.0);
     }
 
     @Override

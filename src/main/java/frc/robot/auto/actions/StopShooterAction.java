@@ -1,14 +1,14 @@
 package frc.robot.auto.actions;
 
-import frc.robot.Shooter;
+import frc.robot.subsystems.Shooter;
 import frc.robot.lib.util.DataLogger;
 
-public class StopAction implements Action {
+public class StopShooterAction implements Action {
 
     Shooter shooter = Shooter.getInstance();
     boolean finished = false;
 
-    public StopAction() {}
+    public StopShooterAction() {}
 
     @Override
     public void start() {
@@ -17,7 +17,6 @@ public class StopAction implements Action {
 
     @Override
     public void update() {
-        System.out.println("Starting to shoot.");
         shooter.stop();
         finished = true;
     }
@@ -29,7 +28,6 @@ public class StopAction implements Action {
 
     @Override
     public void done() {
-        System.out.println("Finished");
     }
 
     // @Override

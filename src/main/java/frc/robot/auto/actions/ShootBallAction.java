@@ -1,14 +1,18 @@
 package frc.robot.auto.actions;
 
-import frc.robot.Shooter;
+import frc.robot.Agitator;
 import frc.robot.lib.util.DataLogger;
 
-public class ShootLowGoalAction implements Action {
+public class ShootBallAction implements Action {
 
-    Shooter shooter = Shooter.getInstance();
+    Agitator agitator = Agitator.getInstance();
     boolean finished = false;
+    int balls = 0;
 
-    public ShootLowGoalAction() {}
+    public ShootBallAction(int _balls)
+    {
+        balls = _balls;
+    }
 
     @Override
     public void start() {
@@ -17,9 +21,8 @@ public class ShootLowGoalAction implements Action {
 
     @Override
     public void update() {
-        System.out.println("Starting to shoot.");
-       shooter.shoot(true);
-        finished = true;
+        agitator.shootBalls(balls);
+        finished = agitator.getAngleDegError() < 1.0;
     }
 
     @Override
@@ -29,7 +32,6 @@ public class ShootLowGoalAction implements Action {
 
     @Override
     public void done() {
-        System.out.println("Finished shooting low goal.");
     }
 
     // @Override

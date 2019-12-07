@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -12,8 +12,10 @@ import frc.robot.lib.joystick.SelectedDriverControls;
 import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Vector2d;
+import frc.robot.loops.Loop;
+import frc.robot.Constants;
 
-public class Shooter
+public class Shooter implements Loop
 {
 	// singleton class
     private static Shooter instance = null;
@@ -64,8 +66,13 @@ public class Shooter
     public double kCameraAngle = 42.5;
     public double kFrontToCameraDist = 7;
 
+    public static enum GoalEnum
+    {
+        LOW_GOAL, HIGH_GOAL, BUNNY_HIGH_GOAL;
+    }
+ 
     // Distance vs. RPM Tables
-    public double highGoalTable[][] = {
+    public double bunnyHighGoalTable[][] = {
         {30,    2900},
         {39,    2750},
         {47,    2700},
@@ -73,7 +80,15 @@ public class Shooter
         {59,    2750},
         {79,    2825},   };
 
-    public double lowGoalTable[][] = {
+    public double highGoalTable[][] = {
+        {30,    2900},
+        {39,    2750},
+        {47,    2700},
+        {56,    2700},
+        {59,    2750},
+        {79,    2825},   };
+    
+        public double lowGoalTable[][] = {
         {43,    1950},
         {56,    2050}, 
         {72,    1800},
@@ -84,7 +99,7 @@ public class Shooter
 
     public Shooter() 
     {
-        shooterMotor = new TalonSRX(3);
+        shooterMotor = new TalonSRX(Constants.kShooterTalonId);
         camera = new Limelight("limelight", 0);
 
         //====================================================
@@ -119,14 +134,33 @@ public class Shooter
         shooterMotor.configContinuousCurrentLimit(kContinuousCurrentLimit, Constants.kTalonTimeoutMs);
         shooterMotor.enableCurrentLimit(true);
     }
+
+
+    //Loop Functions
+    @Override
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onLoop() {
+
+    }
+
+    @Override
+    public void onStop() {
+    }
+
+
     
 
 
-    public void setTarget(double rpm)
+    public void setSpeed(double rpm)
     {
         double encoderSpeed = rpmToEncoderUnitsPerFrame(rpm);
         shooterMotor.set(ControlMode.Velocity, encoderSpeed);
-        SmartDashboard.putNumber("Shooter Raw Speed", encoderSpeed);
+        SmartDashboard.putNumber("Shooter/SpeedRPM", rpm);
+        SmartDashboard.putNumber("Shooter/Raw Speed", encoderSpeed);
     }
     
 	// Talon SRX reports position in rotations while in closed-loop Position mode
@@ -142,53 +176,55 @@ public class Shooter
     public void run()
     {
         SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
-        double targetDeg = camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees;
-        double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
-        boolean targetLowGoal = driverControls.getBoolean(DriverControlsEnum.TARGET_LOW);
-        double goalTable[][] = handleGoalTable(targetLowGoal, highGoalTable, lowGoalTable);
-        int keyL = getLinear(distance, goalTable);
-        double shooterCorrection = -driverControls.getAxis(DriverAxisEnum.SHOOTER_SPEED_CORRECTION)*kSliderMax;
-        double nominalSpeed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
-        if (camera.getIsTargetFound())
+ 
+        GoalEnum goal = GoalEnum.HIGH_GOAL;
+        if (driverControls.getBoolean(DriverControlsEnum.TARGET_LOW))
         {
-            speed = nominalSpeed + shooterCorrection;
-            SmartDashboard.putNumber("Distance To Target", distance);
+            goal = GoalEnum.LOW_GOAL;
         }
-        if (!SmartDashboard.getBoolean("Shooter Debug", false))
+
+        if (!SmartDashboard.getBoolean("Shooter/Debug", false))
         {
             if (driverControls.getBoolean(DriverControlsEnum.SHOOT))
             {
-                setTarget(speed);
+                setTarget(goal);
             }
             else
             {
-                setTarget(0);
+                stop();
             }
         }
-        SmartDashboard.putNumber("Shooter Speed", speed);
-        SmartDashboard.putNumber("CorrectionValue", shooterCorrection);
-        SmartDashboard.putNumber("NominalSpeed", nominalSpeed);
-        SmartDashboard.putNumber("Target Degree", targetDeg);
-        SmartDashboard.putBoolean("Found Target", camera.getIsTargetFound());
+        SmartDashboard.putBoolean("Shooter/Found Target", camera.getIsTargetFound());
     }
 
-    public void shoot(boolean lowGoal)
+    public void setTarget(GoalEnum goal)
     {
-        double goalTable[][] = handleGoalTable(lowGoal, highGoalTable, lowGoalTable);
-        double distance = handleDistance(camera.getTargetVerticalAngleRad(), false)-kFrontToCameraDist;
+        SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
+
+        double goalTable[][] = handleGoalTable(goal);
+        double distance = handleDistance(camera.getTargetVerticalAngleRad(), goal)-kFrontToCameraDist;
         int keyL = getLinear(distance, goalTable);
+        double shooterCorrection = -driverControls.getAxis(DriverAxisEnum.SHOOTER_SPEED_CORRECTION)*kSliderMax;
         double nominalSpeed = handleLinear(distance, goalTable[keyL][0], goalTable[keyL+1][0], goalTable[keyL][1], goalTable[keyL+1][1]);
-        setTarget(nominalSpeed);
+        speed = nominalSpeed + shooterCorrection;
+        setSpeed(speed);
+        SmartDashboard.putString("Shooter/Goal", goal.name());
+        SmartDashboard.putNumber("Shooter/Distance", distance);
+        SmartDashboard.putNumber("Shooter/CorrectionSpeed", shooterCorrection);
+        SmartDashboard.putNumber("Shooter/NominalSpeed", nominalSpeed);
+        SmartDashboard.putNumber("Shooter/Target Angle Deg", camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees);
+        SmartDashboard.putBoolean("Shooter/Found Target", camera.getIsTargetFound());
+
     }
 
     public void stop() // You shall not PAAAAASSSSS -Gandalf the Code
     {
-        setTarget(0);
+        setSpeed(0);
     }
 
-    public double handleDistance (double angleRad, boolean lowGoal)
+    public double handleDistance (double angleRad, GoalEnum goal)
     {
-        if (lowGoal)
+        if (goal == GoalEnum.LOW_GOAL)
         {
             return (kLowGoalHeight-kCameraHeight)/(Math.tan(angleRad+(kCameraAngle * Vector2d.degreesToRadians)));
         }
@@ -198,15 +234,14 @@ public class Shooter
         }
     }
 
-    public double[][] handleGoalTable (boolean lowGoal, double[][] falseTable, double[][] trueTable)
+    public double[][] handleGoalTable (GoalEnum goal)
     {
-        if (lowGoal)
+        switch (goal)
         {
-            return trueTable;
-        }
-        else
-        {
-            return falseTable;
+            case LOW_GOAL:          return lowGoalTable;
+            case BUNNY_HIGH_GOAL:   return bunnyHighGoalTable;
+            case HIGH_GOAL:         return highGoalTable;
+            default:                return highGoalTable;
         }
     }
 
@@ -242,5 +277,5 @@ public class Shooter
 	public DataLogger getLogger()
 	{
 		return logger;
-    }    
+    }
 }

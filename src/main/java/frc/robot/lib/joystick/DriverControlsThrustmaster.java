@@ -56,8 +56,8 @@ public class DriverControlsThrustmaster extends DriverControlsBase
     {
         switch (_control)
         {
-            case INTAKE:                        return false;
-            case OUTTAKE:                       return false;
+            case INTAKE:                        return !controller.getButton(Thrustmaster.kLeftThumbButton) && (controller.getAxis(Thrustmaster.kYAxis) > 0.02 || !(controller.getAxis(Thrustmaster.kXAxis) <= 0.02 && controller.getAxis(Thrustmaster.kXAxis) >= 0.02));
+            case OUTTAKE:                       return controller.getButton(Thrustmaster.kLeftThumbButton);
             case SHOOT:                         return controller.getButton(Thrustmaster.kTriggerButton) || controller.getButton(Thrustmaster.kBottomThumbButton);
             case TARGET_LOW:                    return controller.getButton(Thrustmaster.kBottomThumbButton) && !controller.getButton(Thrustmaster.kTriggerButton);
             case QUICK_TURN:                    return false;

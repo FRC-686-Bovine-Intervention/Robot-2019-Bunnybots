@@ -26,7 +26,7 @@ public class Constants extends ConstantsBase {
     public static int kTalonTimeoutMs = 5; // ms
     public static int kTalonPidIdx = 0; // 0 for non-cascaded PIDs, 1 for cascaded PIDs
     
-    public static double kIntakeSpeed = 0.5; 
+    public static double kIntakeSpeed = 1.0; 
     
     public static double kNominalBatteryVoltage = 12.0;
 
@@ -36,30 +36,16 @@ public class Constants extends ConstantsBase {
     public static int kLeftMotorSlave1TalonId =     2;
     public static int kRightMotorMasterTalonId =    3;
     public static int kRightMotorSlave1TalonId =    4;
-    public static int kShooterTalonId =   5; 
-    public static int kAgitatorTalonId =   3;   
-    public static int kIntakeTalonId = 7;  
+    public static int kShooterTalonId =             5; 
+    public static int kIntakeTalonId =              6;  
+    public static int kAgitatorTalonId =            7;   
     
-
-    // RoboRIO DIO ports
-    public static int kBallDetectSensorPort = 0;  
-    public static int kUltrasonicSensorPort = 1;
-    public static int kHatchDetectSensorPort = 1;  
-
-    // Pnuematic Control Channels
-    public static int kLeftClimberReverseChannel =  0;
-    public static int kLeftClimberForwardChannel =  1;
-    public static int kRightClimberReverseChannel = 2;
-    public static int kRightClimberForwardChannel = 3;
-    public static int kHatchEjectChannel =          4;  // old stuff
-    public static int kHatchExtendChannel =         4;
-    public static int kHatchGrabChannel =           5;
 
     // Gyro
     public enum GyroSelectionEnum { BNO055, NAVX, PIGEON; }
     //public static GyroSelectionEnum GyroSelection = GyroSelectionEnum.BNO055;
-    // public static GyroSelectionEnum GyroSelection = GyroSelectionEnum.NAVX;
-    public static GyroSelectionEnum GyroSelection = GyroSelectionEnum.PIGEON;
+    public static GyroSelectionEnum GyroSelection = GyroSelectionEnum.NAVX;
+    // public static GyroSelectionEnum GyroSelection = GyroSelectionEnum.PIGEON;
     
 
 

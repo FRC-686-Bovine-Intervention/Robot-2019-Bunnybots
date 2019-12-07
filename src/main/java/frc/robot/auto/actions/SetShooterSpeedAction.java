@@ -1,14 +1,17 @@
 package frc.robot.auto.actions;
 
-import frc.robot.Shooter;
+import frc.robot.subsystems.Shooter;
 import frc.robot.lib.util.DataLogger;
 
-public class ShootHighGoalAction implements Action {
+public class SetShooterSpeedAction implements Action {
 
     Shooter shooter = Shooter.getInstance();
     boolean finished = false;
+    Shooter.GoalEnum goal = Shooter.GoalEnum.HIGH_GOAL;
 
-    public ShootHighGoalAction(){}
+    public SetShooterSpeedAction(Shooter.GoalEnum _goal){
+        goal = _goal;
+    }
 
     @Override
     public void start() {
@@ -17,8 +20,7 @@ public class ShootHighGoalAction implements Action {
 
     @Override
     public void update() {
-        System.out.println("Starting to shoot.");
-       shooter.shoot(false);
+        shooter.setTarget(goal);
         finished = true;
     }
 
@@ -29,7 +31,6 @@ public class ShootHighGoalAction implements Action {
 
     @Override
     public void done() {
-        System.out.println("Finished shooting high goal.");
     }
 
     // @Override

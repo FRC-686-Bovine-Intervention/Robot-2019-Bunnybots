@@ -12,10 +12,14 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.auto.AutoModeExecuter;
+import frc.robot.command_status.DriveCommand;
 import frc.robot.lib.joystick.SelectedDriverControls;
 import frc.robot.lib.util.DataLogController;
 import frc.robot.lib.util.DataLogger;
+import frc.robot.loops.LoopController;
+import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,10 +35,12 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   SelectedDriverControls selectedDriverControls = SelectedDriverControls.getInstance();
   private AutoModeExecuter autoModeExecuter = null;
+  private LoopController loopController;
 
-  private Shooter shooter;
-  private Intake intake = Intake.getInstance();
-  private Agitator agitator = Agitator.getInstance();
+	Drive drive = Drive.getInstance();
+  Shooter shooter;
+  Intake intake;
+  Agitator agitator;
   SmartDashboardInteractions smartDashboardInteractions = SmartDashboardInteractions.getInstance();
 
   DataLogController robotLogger;
@@ -46,9 +52,20 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    SmartDashboard.putNumber("Pid",0);
+    shooter = Shooter.getInstance();
+    intake = Intake.getInstance();
+    agitator = Agitator.getInstance();
+
+
+    loopController = new LoopController();
+    loopController.register(Shooter.getInstance());
+    loopController.register(Intake.getInstance());
+    //loopController.register(Agitator.getInstance()); //Agitator is not yet set up with the loop interface
+
+
+    SmartDashboard.putNumber("Pid",5);
     SmartDashboard.putNumber("pId",0);
-    SmartDashboard.putNumber("piD",0);
+    SmartDashboard.putNumber("piD",10000);
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -56,7 +73,7 @@ public class Robot extends TimedRobot {
     shooter = Shooter.getInstance();
     SmartDashboard.putNumber("ShooterRPM", 0);
     SmartDashboard.putBoolean("Shooter Debug", false);
-    SmartDashboard.putNumber("AgitatorRPM", 0);
+    SmartDashboard.putNumber("AgitatorDegree", 0);
     SmartDashboard.putBoolean("Agitator Debug", false);
     robotLogger = DataLogController.getRobotLogController();
     robotLogger.register(this.getLogger());
@@ -128,10 +145,6 @@ public class Robot extends TimedRobot {
   }
   @Override
   public void teleopInit() {
-    double Pid = SmartDashboard.getNumber("Pid", 100);
-    double pId = SmartDashboard.getNumber("pId", 0);
-    double piD = SmartDashboard.getNumber("piD", 0);
-    agitator.setPIDValues(Pid, pId, piD);
   }
   /**
    * This function is called periodically during operator control.
@@ -140,16 +153,17 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
     agitator.run();
-    if (SmartDashboard.getBoolean("Shooter Debug", false))
-    {
-      double rpm = SmartDashboard.getNumber("ShooterRPM", 0);
-      shooter.setTarget(rpm);
-    }
     shooter.run();
+    loopController.run();	
+
+    DriveCommand driveCmd = selectedDriverControls.getDriveCommand();
+    drive.setOpenLoop(driveCmd);
+
+
     if (SmartDashboard.getBoolean("Agitator Debug", false))
     {
-      double agitatorSet = SmartDashboard.getNumber("AgitatorRPM", 0);
-      agitator.setSpeed(agitatorSet);
+      double agitatorSet = SmartDashboard.getNumber("AgitatorDegree", 0);
+      agitator.setDegree(agitatorSet);
     }
   }
 
@@ -165,7 +179,7 @@ public class Robot extends TimedRobot {
         @Override
         public void log()
         {
-			put("OperationalMode", operationalMode.get().toString());
+			    put("OperationalMode", operationalMode.get().toString());
         }
     };
     

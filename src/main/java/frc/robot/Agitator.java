@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
@@ -23,45 +24,49 @@ public class Agitator
 		}
 		return instance;
     }
-    private AgitatorState agitatorstate = AgitatorState.getInstance();
 	
 	// public enum AgitatorState { UNINITIALIZED, ARM_BAR_DELAY, ZEROING, RUNNING, ESTOPPED; }
 	// private AgitatorState state = AgitatorState.UNINITIALIZED;
 	// private AgitatorState nextState = AgitatorState.UNINITIALIZED;
 	
 
-    public final int kSlotIdx = 0;
-    public final int kSlotIdx_Angle = 1;
+    public static final int kSlotIdxSpeed = 0;
+    public static final int kSlotIdxPos   = 1;
 
-    public final double kGearRatio = 21;
-    public final double kCalMaxEncoderPulsePer100ms = 40650/kGearRatio;	// velocity at a max throttle (measured using Phoenix Tuner)
-    public final double kCalMaxPercentOutput 		= 1.0;	// percent output of motor at above throttle (using Phoenix Tuner)
+    public static final double kCalMaxEncoderPulsePer100ms = 1950;	// velocity at a max throttle (measured using Phoenix Tuner)
+    public static final double kCalMaxPercentOutput 		= 1.0;	// percent output of motor at above throttle (using Phoenix Tuner)
 
-    public final double kCruiseVelocity = 0.80 * kCalMaxEncoderPulsePer100ms;		// cruise below top speed
-	public final double kKf = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
-	public double kKp = 0.002;	   
-    public double kKi = 0.0;    
-    public double kKd = 0;	// to resolve any overshoot, start at 10*Kp 
-
-    public final double kKf_Angle = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
-    public double kKp_Angle = 0.2;
-    public double kKi_Angle = 0;
-    public double kKd_Angle = 0;
-
-
-	public static double kQuadEncoderCodesPerRev = 1024;
-	public static double kQuadEncoderUnitsPerRev = 4*kQuadEncoderCodesPerRev;
-    public static double kQuadEncoderStatusFramePeriod = 0.100; // 100 ms
-    public static double kQuadEncoderUnitsPerDeg = kQuadEncoderUnitsPerRev/360;
-
-    public final int kAllowableError = (int)rpmToEncoderUnitsPerFrame(10);
-
-    public final int kPeakCurrentLimit = 50;
-    public final int kPeakCurrentDuration = 200;
-    public final int kContinuousCurrentLimit = 30;
-
-    public final double kBallsPerSecond = 1;
     
+	public static final double kKfSpeed = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
+	public static double kKpSpeed = 5;	   
+    public static double kKiSpeed = 0.0;    
+    public static double kKdSpeed = 10000;	// to resolve any overshoot, start at 10*Kp 
+    
+    public static final double kKfPos = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
+    public static double kKpPos = 7;
+    public static double kKiPos = 0;
+    public static double kKdPos = 10000;
+    
+    
+    public static final double kGearRatio = 21;
+    public static final double kQuadEncoderCodesPerRev = 1024;
+	public static final double kQuadEncoderUnitsPerRev = 4*kQuadEncoderCodesPerRev;
+    public static final double kQuadEncoderStatusFramePeriod = 0.100; // 100 ms
+    public static final double kQuadEncoderUnitsPerDeg = kQuadEncoderUnitsPerRev/360;
+    
+    public static final double kCruiseVelocity = rpmsToEncoderUnitsPerFramePerSec(30.0);		// cruise below top speed
+    public static final double timeToCruiseVelocity = 0.1;  // seconds
+    public static final double kMaxAcceleration = kCruiseVelocity /timeToCruiseVelocity;
+    
+    public static final int kAllowableError = (int)rpmToEncoderUnitsPerFrame(10);
+    public static final int kAllowableErrorPos = 1;
+
+    public static final int kPeakCurrentLimit = 30;
+    public static final int kPeakCurrentDuration = 200;
+    public static final int kContinuousCurrentLimit = 20;
+
+    private double targetAngle = 0.0;
+
     public Agitator() 
     {
         agitatorMotor = new TalonSRX(Constants.kAgitatorTalonId);
@@ -78,27 +83,31 @@ public class Agitator
 		agitatorMotor.setSensorPhase(true); // set so that positive motor input results in positive change in sensor value
 		agitatorMotor.setInverted(true);   // set to have green LEDs when driving forward
 		
-		// set relevant frame periods to be at least as fast as periodic rate
+		// set relevant frame periods to be at least as fast as perdic rate
 		agitatorMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General,      (int)(1000 * Constants.kLoopDt), Constants.kTalonTimeoutMs);
 		agitatorMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,    (int)(1000 * Constants.kLoopDt), Constants.kTalonTimeoutMs);
 		agitatorMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, (int)(1000 * Constants.kLoopDt), Constants.kTalonTimeoutMs);
 		agitatorMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0,  (int)(1000 * Constants.kLoopDt), Constants.kTalonTimeoutMs);
 		
 		// configure velocity loop PID 
-        agitatorMotor.selectProfileSlot(kSlotIdx, Constants.kTalonPidIdx); 
-        agitatorMotor.config_kF(kSlotIdx, kKf, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kP(kSlotIdx, kKp, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kI(kSlotIdx, kKi, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kD(kSlotIdx, kKd, Constants.kTalonTimeoutMs);
-        agitatorMotor.configAllowableClosedloopError(kSlotIdx, kAllowableError, Constants.kTalonTimeoutMs);
+        agitatorMotor.selectProfileSlot(kSlotIdxSpeed, Constants.kTalonPidIdx); 
+        agitatorMotor.config_kF(kSlotIdxSpeed, kKfSpeed, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kP(kSlotIdxSpeed, kKpSpeed, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kI(kSlotIdxSpeed, kKiSpeed, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kD(kSlotIdxSpeed, kKdSpeed, Constants.kTalonTimeoutMs);
+        agitatorMotor.configAllowableClosedloopError(kSlotIdxSpeed, kAllowableError, Constants.kTalonTimeoutMs);
 
         // configure angle loop PID
-        agitatorMotor.selectProfileSlot(kSlotIdx_Angle, Constants.kTalonPidIdx); 
-        agitatorMotor.config_kF(kSlotIdx_Angle, kKf_Angle, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kP(kSlotIdx_Angle, kKp_Angle, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kI(kSlotIdx_Angle, kKi_Angle, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kD(kSlotIdx_Angle, kKd_Angle, Constants.kTalonTimeoutMs);
-        agitatorMotor.configAllowableClosedloopError(kSlotIdx_Angle, kAllowableError, Constants.kTalonTimeoutMs);
+        agitatorMotor.selectProfileSlot(kSlotIdxPos, Constants.kTalonPidIdx); 
+        agitatorMotor.config_kF(kSlotIdxPos, kKfPos, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kP(kSlotIdxPos, kKpPos, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kI(kSlotIdxPos, kKiPos, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kD(kSlotIdxPos, kKdPos, Constants.kTalonTimeoutMs);
+        agitatorMotor.configAllowableClosedloopError(kSlotIdxPos, kAllowableErrorPos, Constants.kTalonTimeoutMs);
+        
+        // Motion Magic
+        agitatorMotor.configMotionCruiseVelocity((int)kCruiseVelocity);
+        agitatorMotor.configMotionAcceleration((int)kMaxAcceleration);
         
         // current limits
         agitatorMotor.configPeakCurrentLimit(kPeakCurrentLimit, Constants.kTalonTimeoutMs);
@@ -106,41 +115,44 @@ public class Agitator
         agitatorMotor.configContinuousCurrentLimit(kContinuousCurrentLimit, Constants.kTalonTimeoutMs);
         agitatorMotor.enableCurrentLimit(true);
 
-		agitatorMotor.setSelectedSensorPosition( 0, Constants.kTalonPidIdx, Constants.kTalonTimeoutMs);
-
+        targetAngle = 0.0;
+		agitatorMotor.setSelectedSensorPosition(0, Constants.kTalonPidIdx, Constants.kTalonTimeoutMs);
     }
 
     public void setSpeed(double rpm)
     {
+        agitatorMotor.setNeutralMode(NeutralMode.Coast);
         double encoderSpeed = rpmToEncoderUnitsPerFrame(rpm);
+        agitatorMotor.selectProfileSlot(kSlotIdxSpeed, Constants.kTalonPidIdx); 
         agitatorMotor.set(ControlMode.Velocity, encoderSpeed);
         SmartDashboard.putNumber("Agitator Raw Speed", encoderSpeed);
     }
 
     public void setDegree(double deg)
     {
-        agitatorMotor.set(ControlMode.Position, deg);
-        SmartDashboard.putNumber("Agitator Raw Angle", deg);
-        if (agitatorMotor.getControlMode() == ControlMode.MotionMagic)
-		{
-			agitatorstate.setTrajectoryTargetInches( degreesToEncoderUnits(agitatorMotor.getClosedLoopTarget(Constants.kTalonPidIdx)) );
-			agitatorstate.setTrajectoryPositionInches( encoderUnitsToRevolutions(agitatorMotor.getActiveTrajectoryPosition()) );
-			agitatorstate.setTrajectoryVelocityInchesPerSec( degreesToEncoderUnits(agitatorMotor.getActiveTrajectoryVelocity()) );
-			agitatorstate.setPidError( agitatorMotor.getClosedLoopError(Constants.kAgitatorTalonId) );
-		}
+        agitatorMotor.setNeutralMode(NeutralMode.Brake);
+        agitatorMotor.selectProfileSlot(kSlotIdxPos, Constants.kTalonPidIdx); 
+        agitatorMotor.set(ControlMode.MotionMagic, degreesToEncoderUnits(deg));
+        SmartDashboard.putNumber("Agitator Raw Angle", degreesToEncoderUnits(deg));
+    }
+
+    public double getAngleDegError()
+    {
+        return encoderUnitsToRevolutions(agitatorMotor.getActiveTrajectoryPosition()) * 360 - targetAngle;
     }
 
     public void setPIDValues(double P, double I, double D)
     {
-        kKp = P;
-        kKi = I;
-        kKd = D;
+        kKpSpeed = P;
+        kKiSpeed = I;
+        kKdSpeed = D;
 
-        agitatorMotor.selectProfileSlot(kSlotIdx, Constants.kTalonPidIdx); 
-        agitatorMotor.config_kP(kSlotIdx, kKp, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kI(kSlotIdx, kKi, Constants.kTalonTimeoutMs); 
-        agitatorMotor.config_kD(kSlotIdx, kKd, Constants.kTalonTimeoutMs);
-
+        // int slot = kSlotIdxSpeed;
+        int slot = kSlotIdxPos;
+        agitatorMotor.selectProfileSlot(slot, Constants.kTalonPidIdx); 
+        agitatorMotor.config_kP(slot, kKpSpeed, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kI(slot, kKiSpeed, Constants.kTalonTimeoutMs); 
+        agitatorMotor.config_kD(slot, kKdSpeed, Constants.kTalonTimeoutMs);
     }
 
     public void run()
@@ -148,15 +160,26 @@ public class Agitator
         SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
         if (driverControls.getBoolean(DriverControlsEnum.SHOOT))
         {
-            setSpeed(((17.5*Math.PI)/(kBallsPerSecond*5+4.5)*60)/5);
+            setSpeed(60);
         }
         else
         {
             setSpeed(0);
         }
-        SmartDashboard.putNumber("Current P", kKp);
-        SmartDashboard.putNumber("Current I", kKi);
-        SmartDashboard.putNumber("Current D", kKd);
+        SmartDashboard.putNumber("Current P", kKpSpeed);
+        SmartDashboard.putNumber("Current I", kKiSpeed);
+        SmartDashboard.putNumber("Current D", kKdSpeed);
+    }
+    
+    public void incrementDegree(double deg)
+    {
+        targetAngle += deg;
+        setDegree(targetAngle);
+    }
+
+    public void shootBalls(int balls)
+    {
+        incrementDegree(60.0*balls);
     }
 
    	// Talon SRX reports position in rotations while in closed-loop Position mode
@@ -167,6 +190,6 @@ public class Agitator
     // Talon SRX reports speed in RPM while in closed-loop Speed mode
     public static double encoderUnitsPerFrameToRPM(int _encoderEdgesPerFrame) { return encoderUnitsToRevolutions(_encoderEdgesPerFrame) * 60.0 / kQuadEncoderStatusFramePeriod; }
     public static int rpmToEncoderUnitsPerFrame(double _rpm) { return (int)(revolutionsToEncoderUnits(_rpm) / 60.0 * kQuadEncoderStatusFramePeriod); }
-   
+    public static int rpmsToEncoderUnitsPerFramePerSec(double rpms){return (int)(rpms*(kQuadEncoderUnitsPerRev)*(1.0/60.0)*(1.0/10.0));}
    
 }
