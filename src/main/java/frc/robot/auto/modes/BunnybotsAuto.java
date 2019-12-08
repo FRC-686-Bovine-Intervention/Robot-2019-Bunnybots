@@ -13,32 +13,41 @@ public class BunnybotsAuto extends AutoModeBase {
     public BunnybotsAuto() 
     { 
     }
-
+    
     @Override
     protected void routine() throws AutoModeEndedException {
+        System.out.println("Start BunnybotsAuto");
+
         // Shoot Bunny at high goal
+        System.out.println("Set Shooter Speed for High Goal, Bunny Ball");
         runAction(new SetShooterSpeedAction(Shooter.GoalEnum.BUNNY_HIGH_GOAL));
-        runAction(new WaitAction(0.5));     // wait for  motor to change speeds
+        System.out.println("Shoot 1 Ball");
         int numBalls = 1;
         runAction(new ShootBallAction(numBalls));
+        System.out.println("Wait for Ball to Shoot");
         runAction(new WaitAction(2.0));     // wait for  motor to change speeds
 
         // Shoot at high goal
+        System.out.println("Set Shooter Speed for High Goal");
         runAction(new SetShooterSpeedAction(Shooter.GoalEnum.HIGH_GOAL));
-        runAction(new WaitAction(0.5));     // wait for  motor to change speeds
+        System.out.println("Shoot 2 Balls");
         numBalls = 2;
         runAction(new ShootBallAction(numBalls));
+        System.out.println("Wait for Ball to Shoot");
         runAction(new WaitAction(2.0));     // wait for  motor to change speeds
 
         // this is where we move to the low goal
 
         // Shoot at low goal
+        System.out.println("Set Shooter Speed for Low Goal");
         runAction(new SetShooterSpeedAction(Shooter.GoalEnum.LOW_GOAL));
-        runAction(new WaitAction(0.5));     // wait for  motor to change speeds
+        System.out.println("Shoot 2 Balls");
         numBalls = 2;
         runAction(new ShootBallAction(numBalls));
+        System.out.println("Wait for Ball to Shoot");
         runAction(new WaitAction(2.0));     // wait for  motor to change speeds
 
+        System.out.println("Stop Shooter");
         runAction(new StopShooterAction());
 
 

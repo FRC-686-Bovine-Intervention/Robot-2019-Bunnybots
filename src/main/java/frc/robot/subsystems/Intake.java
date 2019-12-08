@@ -3,7 +3,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import frc.robot.Constants;
 import frc.robot.lib.joystick.DriverControlsBase;
@@ -14,7 +14,8 @@ import frc.robot.loops.Loop;
 
 public class Intake extends Subsystem implements Loop
 {
-    public TalonSRX intakeMotor;
+    public VictorSPX intakeMotor;
+
 	// singleton class
 	private static Intake instance = null;
 	public static Intake getInstance() 
@@ -27,7 +28,7 @@ public class Intake extends Subsystem implements Loop
 
 
     public Intake(){
-        intakeMotor = new TalonSRX(Constants.kIntakeTalonId);
+        intakeMotor = new VictorSPX(Constants.kIntakeTalonId);
 
        // Factory default hardware to prevent unexpected behavior
        intakeMotor.configFactoryDefault();
@@ -47,11 +48,11 @@ public class Intake extends Subsystem implements Loop
 
         if (driverControls.getBoolean(DriverControlsEnum.INTAKE))
         {
-            set(+Constants.kIntakeSpeed);
+            set(+Constants.kIntakeVoltage);
         }
         else if (driverControls.getBoolean(DriverControlsEnum.OUTTAKE))
         {
-            set(-Constants.kIntakeSpeed);
+            set(-Constants.kIntakeVoltage);
         }
         else 
         {

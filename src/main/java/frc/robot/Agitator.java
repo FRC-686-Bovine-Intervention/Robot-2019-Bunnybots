@@ -115,8 +115,7 @@ public class Agitator
         agitatorMotor.configContinuousCurrentLimit(kContinuousCurrentLimit, Constants.kTalonTimeoutMs);
         agitatorMotor.enableCurrentLimit(true);
 
-        targetAngle = 0.0;
-		agitatorMotor.setSelectedSensorPosition(0, Constants.kTalonPidIdx, Constants.kTalonTimeoutMs);
+        zeroSensors();
     }
 
     public void setSpeed(double rpm)
@@ -126,6 +125,12 @@ public class Agitator
         agitatorMotor.selectProfileSlot(kSlotIdxSpeed, Constants.kTalonPidIdx); 
         agitatorMotor.set(ControlMode.Velocity, encoderSpeed);
         SmartDashboard.putNumber("Agitator Raw Speed", encoderSpeed);
+    }
+
+    public void shootBalls(int balls)
+    {
+        targetAngle += 60.0 * balls;
+        setDegree(targetAngle);
     }
 
     public void setDegree(double deg)
@@ -138,7 +143,15 @@ public class Agitator
 
     public double getAngleDegError()
     {
-        return encoderUnitsToRevolutions(agitatorMotor.getActiveTrajectoryPosition()) * 360 - targetAngle;
+        agitatorMotor.selectProfileSlot(kSlotIdxPos, Constants.kTalonPidIdx); 
+        double sensorAngleDeg = encoderUnitsToDegrees(agitatorMotor.getSelectedSensorPosition(Constants.kTalonPidIdx));
+        double errorAngleDeg = sensorAngleDeg - targetAngle;
+
+        SmartDashboard.putNumber("Agitator/sensorAngleDeg",sensorAngleDeg);
+        SmartDashboard.putNumber("Agitator/targetAngleDeg",targetAngle);
+        SmartDashboard.putNumber("Agitator/errorAngleDeg",errorAngleDeg);
+
+        return Math.abs(errorAngleDeg);
     }
 
     public void setPIDValues(double P, double I, double D)
@@ -166,24 +179,25 @@ public class Agitator
         {
             setSpeed(0);
         }
-        SmartDashboard.putNumber("Current P", kKpSpeed);
-        SmartDashboard.putNumber("Current I", kKiSpeed);
-        SmartDashboard.putNumber("Current D", kKdSpeed);
+        // SmartDashboard.putNumber("Current P", kKpSpeed);
+        // SmartDashboard.putNumber("Current I", kKiSpeed);
+        // SmartDashboard.putNumber("Current D", kKdSpeed);
     }
     
-    public void incrementDegree(double deg)
+    public void zeroSensors()
     {
-        targetAngle += deg;
-        setDegree(targetAngle);
+        targetAngle = 0.0;
+		agitatorMotor.setSelectedSensorPosition(0, Constants.kTalonPidIdx, Constants.kTalonTimeoutMs);
     }
 
-    public void shootBalls(int balls)
+    public void stop()
     {
-        incrementDegree(60.0*balls);
+        setSpeed(0);
     }
 
    	// Talon SRX reports position in rotations while in closed-loop Position mode
     public static double encoderUnitsToRevolutions(int _encoderPosition) {return (double)_encoderPosition / (double)kQuadEncoderUnitsPerRev; }
+    public static double encoderUnitsToDegrees(int _encoderPosition) {return encoderUnitsToRevolutions(_encoderPosition) * 360.0; }
     public static int revolutionsToEncoderUnits(double _rev) {return (int)(_rev * kQuadEncoderUnitsPerRev);}
     public static int degreesToEncoderUnits(double _deg) {return (int)(_deg * kQuadEncoderUnitsPerDeg);}
 

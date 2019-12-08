@@ -4,7 +4,7 @@ import frc.robot.command_status.DriveCommand;
 import frc.robot.lib.joystick.SteeringLib.DeadbandNonLinearity;
 import frc.robot.lib.joystick.SteeringLib.NonLinearityEnum;
 import frc.robot.lib.util.DataLogger;
-
+import frc.robot.subsystems.Drive;
 
 
 public class DriverControlsThrustmaster extends DriverControlsBase
@@ -54,9 +54,13 @@ public class DriverControlsThrustmaster extends DriverControlsBase
 
     public boolean getBoolean( DriverControlsEnum _control ) 
     {
+        // intake when: driving forward or turning, when outtake button is not pressed
+        //              (so no intake when driving backwards or stopped)
+        DriveCommand driveCmd = Drive.getInstance().getCommand();
+
         switch (_control)
         {
-            case INTAKE:                        return !controller.getButton(Thrustmaster.kLeftThumbButton) && (controller.getAxis(Thrustmaster.kYAxis) > 0.02 || !(controller.getAxis(Thrustmaster.kXAxis) <= 0.02 && controller.getAxis(Thrustmaster.kXAxis) >= 0.02));
+            case INTAKE:                        return !controller.getButton(Thrustmaster.kLeftThumbButton) && (driveCmd.getLeftMotor() > 0.0 || driveCmd.getRightMotor() > 0.0);
             case OUTTAKE:                       return controller.getButton(Thrustmaster.kLeftThumbButton);
             case SHOOT:                         return controller.getButton(Thrustmaster.kTriggerButton) || controller.getButton(Thrustmaster.kBottomThumbButton);
             case TARGET_LOW:                    return controller.getButton(Thrustmaster.kBottomThumbButton) && !controller.getButton(Thrustmaster.kTriggerButton);

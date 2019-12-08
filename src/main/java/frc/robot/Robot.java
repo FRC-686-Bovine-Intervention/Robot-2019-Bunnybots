@@ -13,13 +13,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.auto.AutoModeExecuter;
 import frc.robot.command_status.DriveCommand;
+import frc.robot.command_status.RobotState;
 import frc.robot.lib.joystick.SelectedDriverControls;
+import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogController;
 import frc.robot.lib.util.DataLogger;
+import frc.robot.lib.util.Pose;
+import frc.robot.loops.DriveLoop;
+import frc.robot.loops.GoalStateLoop;
 import frc.robot.loops.LoopController;
+import frc.robot.loops.RobotStateLoop;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.vision.VisionDriveAssistant;
+import frc.robot.vision.VisionLoop;
+import frc.robot.vision.VisionTargetList;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -37,7 +46,12 @@ public class Robot extends TimedRobot {
   private AutoModeExecuter autoModeExecuter = null;
   private LoopController loopController;
 
+ 	RobotState robotState = RobotState.getInstance();
 	Drive drive = Drive.getInstance();
+	VisionTargetList visionTargetList = VisionTargetList.getInstance();
+	VisionDriveAssistant visionDriveAssistant = VisionDriveAssistant.getInstance();
+  Limelight camera = Limelight.getInstance();
+
   Shooter shooter;
   Intake intake;
   Agitator agitator;
@@ -58,18 +72,17 @@ public class Robot extends TimedRobot {
 
 
     loopController = new LoopController();
+    loopController.register(drive.getVelocityPIDLoop());
+    loopController.register(DriveLoop.getInstance());
+    loopController.register(RobotStateLoop.getInstance());
+    loopController.register(VisionLoop.getInstance());
+    loopController.register(GoalStateLoop.getInstance());
     loopController.register(Shooter.getInstance());
     loopController.register(Intake.getInstance());
     //loopController.register(Agitator.getInstance()); //Agitator is not yet set up with the loop interface
 
 
-    SmartDashboard.putNumber("Pid",5);
-    SmartDashboard.putNumber("pId",0);
-    SmartDashboard.putNumber("piD",10000);
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
     shooter = Shooter.getInstance();
     SmartDashboard.putNumber("ShooterRPM", 0);
     SmartDashboard.putBoolean("Shooter Debug", false);
@@ -89,8 +102,38 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-
+    loopController.run();	
   }
+
+
+  @Override
+	public void disabledInit()
+	{
+		operationalMode.set(OperationalMode.OperationalModeEnum.DISABLED);
+		boolean logToFile = false;
+		boolean logToSmartDashboard = true;
+		robotLogger.setOutputMode(logToFile, logToSmartDashboard);
+		zeroAllSensors();
+
+		Shuffleboard.stopRecording();
+
+			if (autoModeExecuter != null)
+			{
+				autoModeExecuter.stop();
+			}
+			autoModeExecuter = null;
+
+			stopAll(); // stop all actuators
+			loopController.start();
+	}
+
+	@Override
+	public void disabledPeriodic()
+	{
+			stopAll(); // stop all actuators
+
+			camera.disabledPeriodic();
+	}
 
   /**
    * This autonomous (along with the chooser code above) shows how to select
@@ -111,7 +154,10 @@ public class Robot extends TimedRobot {
     boolean logToSmartDashboard = true;
     robotLogger.setOutputMode(logToFile, logToSmartDashboard);
 
+    loopController.start();
 		Shuffleboard.startRecording();
+
+    camera.autoInit();
 
     m_autoSelected = m_chooser.getSelected();
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
@@ -119,32 +165,29 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
     if (autoModeExecuter != null)
-			{
-    			autoModeExecuter.stop();
-    		}
-    		autoModeExecuter = null;
-    		
-			autoModeExecuter = new AutoModeExecuter();
-      autoModeExecuter.setAutoMode(smartDashboardInteractions.getAutoModeSelection());
-      autoModeExecuter.start();
+    {
+      autoModeExecuter.stop();
+    }
+    autoModeExecuter = null;
+    
+  autoModeExecuter = new AutoModeExecuter();
+  autoModeExecuter.setAutoMode(smartDashboardInteractions.getAutoModeSelection());
+  autoModeExecuter.start();
   }
   /**
    * This function is called periodically during autonomous.
    */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
   }
+
+
+
   @Override
   public void teleopInit() {
+    loopController.start();
+    camera.teleopInit();
+
   }
   /**
    * This function is called periodically during operator control.
@@ -152,12 +195,12 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
-    agitator.run();
-    shooter.run();
-    loopController.run();	
-
     DriveCommand driveCmd = selectedDriverControls.getDriveCommand();
     drive.setOpenLoop(driveCmd);
+
+    agitator.run();
+    shooter.run();
+
 
 
     if (SmartDashboard.getBoolean("Agitator Debug", false))
@@ -173,6 +216,28 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+
+
+  public void setInitialPose (Pose _initialPose)
+  {
+    robotState.reset(_initialPose);
+    System.out.println("InitialPose: " + _initialPose);
+  }
+  
+  public void zeroAllSensors()
+  {
+    drive.zeroSensors();
+    agitator.zeroSensors();
+  }
+  
+  public void stopAll()
+  {
+    drive.stop();
+    intake.stop();
+    agitator.stop();
+    shooter.stop();
+  }
+
 
   private final DataLogger logger = new DataLogger()
     {

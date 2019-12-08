@@ -12,13 +12,13 @@ public class StopShooterAction implements Action {
 
     @Override
     public void start() {
+        shooter.stop();
         finished = false;
     }
 
     @Override
     public void update() {
-        shooter.stop();
-        finished = true;
+         finished = shooter.getSpeedError() < 20.0;
     }
 
     @Override

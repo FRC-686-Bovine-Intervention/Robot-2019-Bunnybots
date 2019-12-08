@@ -15,13 +15,13 @@ public class SetShooterSpeedAction implements Action {
 
     @Override
     public void start() {
+        shooter.setTarget(goal);        
         finished = false;
     }
 
     @Override
     public void update() {
-        shooter.setTarget(goal);
-        finished = true;
+        finished = shooter.getSpeedError() < 120.0;
     }
 
     @Override

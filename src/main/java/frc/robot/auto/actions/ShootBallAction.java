@@ -16,12 +16,12 @@ public class ShootBallAction implements Action {
 
     @Override
     public void start() {
+        agitator.shootBalls(balls);
         finished = false;
     }
 
     @Override
     public void update() {
-        agitator.shootBalls(balls);
         finished = agitator.getAngleDegError() < 1.0;
     }
 

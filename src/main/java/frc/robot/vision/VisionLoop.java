@@ -3,7 +3,6 @@ package frc.robot.vision;
 import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.lib.joystick.SelectedDriverControlsReversible;
 import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.sensors.Limelight.BoundingAngles;
 import frc.robot.lib.sensors.Limelight.BoundingRectangle;
@@ -22,9 +21,8 @@ public class VisionLoop implements Loop {
 	}
 
 	// camera selection
-	public Limelight cargoCamera = Limelight.getCargoInstance();
-	public Limelight hatchCamera = Limelight.getHatchInstance();
-	Limelight cameraSelection = hatchCamera;
+	public Limelight camera = Limelight.getInstance();
+	Limelight cameraSelection = camera;
 
 	public VisionTargetList visionTargetList = VisionTargetList.getInstance();
 
@@ -49,7 +47,7 @@ public class VisionLoop implements Loop {
 	}
 
 	public void getTargets(double currentTime) {
-		cameraSelection = SelectedDriverControlsReversible.getInstance().getDrivingCargo() ? cargoCamera : hatchCamera;
+		cameraSelection = camera;
 
 		double cameraLatency = cameraSelection.getTotalLatencyMs() / 1000.0;
 		double imageCaptureTimestamp = currentTime - cameraLatency; // assumes transport time from phone to this code is
@@ -98,33 +96,6 @@ public class VisionLoop implements Loop {
     public DataLogger getLogger() { return logger; }
 
 
-	/**
-	 * @return the cargoCamera
-	 */
-	public Limelight getCargoCamera() {
-		return cargoCamera;
-	}
-
-	/**
-	 * @param cargoCamera the cargoCamera to set
-	 */
-	public void setCargoCamera(Limelight cargoCamera) {
-		this.cargoCamera = cargoCamera;
-	}
-
-	/**
-	 * @return the hatchCamera
-	 */
-	public Limelight getHatchCamera() {
-		return hatchCamera;
-	}
-
-	/**
-	 * @param hatchCamera the hatchCamera to set
-	 */
-	public void setHatchCamera(Limelight hatchCamera) {
-		this.hatchCamera = hatchCamera;
-	}
 
 	/**
 	 * @return the cameraSelection

@@ -31,7 +31,7 @@ public class Shooter implements Loop
     // Members
     //====================================================
     public TalonSRX shooterMotor;
-    public Limelight camera;
+    public Limelight camera = Limelight.getInstance();
     public double speed;
 
     //====================================================
@@ -43,7 +43,6 @@ public class Shooter implements Loop
     public final double kCalMaxEncoderPulsePer100ms = 33300;	// velocity at a max throttle (measured using Phoenix Tuner)
     public final double kCalMaxPercentOutput 		= 1.0;	// percent output of motor at above throttle (using Phoenix Tuner)
 
-    public final double kCruiseVelocity = 0.80 * kCalMaxEncoderPulsePer100ms;		// cruise below top speed
 	public final double kKf = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
 	public final double kKp = 0.025;	   
 	public final double kKd = 9.0;	// to resolve any overshoot, start at 10*Kp 
@@ -65,6 +64,8 @@ public class Shooter implements Loop
     public double kCameraHeight = 16;
     public double kCameraAngle = 42.5;
     public double kFrontToCameraDist = 7;
+
+    public static double targetRPM = 0;
 
     public static enum GoalEnum
     {
@@ -100,7 +101,6 @@ public class Shooter implements Loop
     public Shooter() 
     {
         shooterMotor = new TalonSRX(Constants.kShooterTalonId);
-        camera = new Limelight("limelight", 0);
 
         //====================================================
         // Configure Deploy Motors
@@ -152,18 +152,7 @@ public class Shooter implements Loop
     }
 
 
-    
-
-
-    public void setSpeed(double rpm)
-    {
-        double encoderSpeed = rpmToEncoderUnitsPerFrame(rpm);
-        shooterMotor.set(ControlMode.Velocity, encoderSpeed);
-        SmartDashboard.putNumber("Shooter/SpeedRPM", rpm);
-        SmartDashboard.putNumber("Shooter/Raw Speed", encoderSpeed);
-    }
-    
-	// Talon SRX reports position in rotations while in closed-loop Position mode
+    // Talon SRX reports position in rotations while in closed-loop Position mode
 	public static double encoderUnitsToRevolutions(int _encoderPosition) {	return (double)_encoderPosition / (double)kQuadEncoderUnitsPerRev; }
 	public static int revolutionsToEncoderUnits(double _rev) { return (int)(_rev * kQuadEncoderUnitsPerRev); }
 
@@ -172,6 +161,28 @@ public class Shooter implements Loop
 	public static int rpmToEncoderUnitsPerFrame(double _rpm) { return (int)(revolutionsToEncoderUnits(_rpm) / 60.0 * kQuadEncoderStatusFramePeriod); }
 
 
+
+    public void setSpeed(double rpm)
+    {
+        targetRPM = rpm;
+        double encoderSpeed = rpmToEncoderUnitsPerFrame(targetRPM);
+        shooterMotor.set(ControlMode.Velocity, encoderSpeed);
+        SmartDashboard.putNumber("Shooter/TargetRPM", targetRPM);
+        SmartDashboard.putNumber("Shooter/EncoderSpeed", encoderSpeed);
+    }
+    
+
+    public double getSpeedError()
+    {
+        double sensorRPM = encoderUnitsPerFrameToRPM(shooterMotor.getSelectedSensorVelocity());
+        double errorRPM = sensorRPM - targetRPM;
+
+        SmartDashboard.putNumber("Shooter/SensorRPM", sensorRPM);
+        SmartDashboard.putNumber("Shooter/TargetRPM", targetRPM);
+        SmartDashboard.putNumber("Shooter/ErrorRPM", errorRPM);
+
+        return Math.abs(errorRPM);
+    }
 
     public void run()
     {
@@ -263,6 +274,10 @@ public class Shooter implements Loop
     {
         return (sH-sL)*Math.min((d-dL)/(dH-dL),1)+sL;
     }
+    
+
+
+
     
 	private final DataLogger logger = new DataLogger()
 	{
