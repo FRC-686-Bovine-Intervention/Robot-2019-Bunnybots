@@ -52,7 +52,7 @@ public class Shooter implements Loop
 	public static double kQuadEncoderUnitsPerRev = 4*kQuadEncoderCodesPerRev;
 	public static double kQuadEncoderStatusFramePeriod = 0.100; // 100 ms
 
-    public final int    kAllowableError = (int)rpmToEncoderUnitsPerFrame(10);
+    public final int kAllowableError = (int)rpmToEncoderUnitsPerFrame(10);
 
     public final int kPeakCurrentLimit = 50;
     public final int kPeakCurrentDuration = 200;
@@ -61,11 +61,12 @@ public class Shooter implements Loop
 
     public double kHighGoalHeight = 76.75;
     public double kLowGoalHeight = 41.5;
-    public double kCameraHeight = 16;
-    public double kCameraAngle = 42.5;
-    public double kFrontToCameraDist = 7;
+    public double kCameraHeight = 23;
+    public double kCameraAngle = 37;
+    public double kFrontToCameraDist = 27.5;
 
     public static double targetRPM = 0;
+    public static double kRPMErrorShooting = 360.0, kRPMErrorStopping = 20.0;
 
     public static enum GoalEnum
     {
@@ -74,28 +75,23 @@ public class Shooter implements Loop
  
     // Distance vs. RPM Tables
     public double bunnyHighGoalTable[][] = {
-        {30,    2900},
-        {39,    2750},
-        {47,    2700},
-        {56,    2700},
-        {59,    2750},
-        {79,    2825},   };
+        {14,    3400},
+        {24,    3050},
+        {34,    3000}   };
 
     public double highGoalTable[][] = {
-        {30,    2900},
-        {39,    2750},
-        {47,    2700},
-        {56,    2700},
-        {59,    2750},
-        {79,    2825},   };
+        {14,    3400},
+        {24,    2950},
+        {34,    2850},
+        {42,    2925},
+        {50,    3000},
+        {60,    3125},
+        {67,    3250}   };
     
-        public double lowGoalTable[][] = {
-        {43,    1950},
-        {56,    2050}, 
-        {72,    1800},
-        {88,    1890},
-        {105,   2000},
-        {117,   2175}};
+    public double lowGoalTable[][] = {
+        {8,    1950},
+        {15,   2075},
+        {26,   2350}};
 
 
     public Shooter() 
@@ -184,6 +180,14 @@ public class Shooter implements Loop
         return Math.abs(errorRPM);
     }
 
+    public boolean nearTarget(boolean shooting){
+        if (shooting){
+            return getSpeedError() < kRPMErrorShooting;
+        } else {
+            return getSpeedError() <kRPMErrorStopping;
+        }
+    }
+
     public void run()
     {
         SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
@@ -205,6 +209,15 @@ public class Shooter implements Loop
                 stop();
             }
         }
+        else
+        {
+            setSpeed(SmartDashboard.getNumber("Shooter/RPM", 0));
+            double distance = handleDistance(camera.getTargetVerticalAngleRad(), goal)-kFrontToCameraDist;
+            if (camera.getIsTargetFound())
+            {  
+                SmartDashboard.putNumber("Shooter/Distance", distance);
+            }
+        }
         SmartDashboard.putBoolean("Shooter/Found Target", camera.getIsTargetFound());
     }
 
@@ -220,15 +233,17 @@ public class Shooter implements Loop
         speed = nominalSpeed + shooterCorrection;
         setSpeed(speed);
         SmartDashboard.putString("Shooter/Goal", goal.name());
-        SmartDashboard.putNumber("Shooter/Distance", distance);
+        if (camera.getIsTargetFound())
+        {       
+            SmartDashboard.putNumber("Shooter/Distance", distance);
+        }        
         SmartDashboard.putNumber("Shooter/CorrectionSpeed", shooterCorrection);
         SmartDashboard.putNumber("Shooter/NominalSpeed", nominalSpeed);
         SmartDashboard.putNumber("Shooter/Target Angle Deg", camera.getTargetVerticalAngleRad() * Vector2d.radiansToDegrees);
         SmartDashboard.putBoolean("Shooter/Found Target", camera.getIsTargetFound());
-
     }
 
-    public void stop() // You shall not PAAAAASSSSS -Gandalf the Code
+    public void stop()
     {
         setSpeed(0);
     }

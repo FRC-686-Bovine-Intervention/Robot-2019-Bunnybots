@@ -21,7 +21,7 @@ public class SetShooterSpeedAction implements Action {
 
     @Override
     public void update() {
-        finished = shooter.getSpeedError() < 120.0;
+        finished = shooter.nearTarget(true);
     }
 
     @Override

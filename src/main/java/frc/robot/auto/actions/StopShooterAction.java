@@ -18,7 +18,7 @@ public class StopShooterAction implements Action {
 
     @Override
     public void update() {
-         finished = shooter.getSpeedError() < 20.0;
+         finished = shooter.nearTarget(false);
     }
 
     @Override

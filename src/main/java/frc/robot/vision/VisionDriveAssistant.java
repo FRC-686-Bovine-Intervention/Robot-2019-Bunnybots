@@ -3,12 +3,14 @@ package frc.robot.vision;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.command_status.DriveCommand;
 import frc.robot.command_status.GoalStates;
 import frc.robot.command_status.GoalStates.GoalState;
 import frc.robot.command_status.RobotState;
 import frc.robot.lib.joystick.SelectedDriverControlsReversible;
+import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Kinematics;
 import frc.robot.lib.util.Kinematics.WheelSpeed;
@@ -72,26 +74,29 @@ public class VisionDriveAssistant
             }
         }
 
-        haveGoal = currentFieldToGoal.isPresent();
+        haveGoal = Limelight.getInstance().getIsTargetFound(); //currentFieldToGoal.isPresent();
+        SmartDashboard.putBoolean("Goal Present1", haveGoal); //========================
 
         // if we don't see a target, continue under driver control
         if (haveGoal)
         {
-			kTargetDistanceThresholdFromCenterInches = Constants.kHatchTargetDistanceThresholdFromCenterInches;
+            kTargetDistanceThresholdFromCenterInches = Constants.kHatchTargetDistanceThresholdFromCenterInches;
+            SmartDashboard.putNumber("DistFromCenter1", kTargetDistanceThresholdFromCenterInches); //========================
 			if (SelectedDriverControlsReversible.getInstance().getDrivingCargo())
 			{
 				kTargetDistanceThresholdFromCenterInches = Constants.kCargoTargetDistanceThresholdFromCenterInches;
 			}
 
             // Get range and angle to target
-            Vector2d fieldToGoal = currentFieldToGoal.get();
-            Pose fieldToShooter = RobotState.getInstance().getFieldToShooter(currentTime);
-		    Vector2d shooterToGoal = fieldToGoal.sub(fieldToShooter.getPosition());
-	    	double distanceToGoal = shooterToGoal.length();
-			double bearingToGoal = shooterToGoal.angle() - fieldToShooter.getHeading(); 	// bearing relative to shooter's heading
+            // Vector2d fieldToGoal = currentFieldToGoal.get();
+            // Pose fieldToShooter = RobotState.getInstance().getFieldToShooter(currentTime);
+		    // Vector2d shooterToGoal = fieldToGoal.sub(fieldToShooter.getPosition());
+	    	// double distanceToGoal = shooterToGoal.length();
+			// double bearingToGoal = shooterToGoal.angle() - fieldToShooter.getHeading(); 	// bearing relative to shooter's heading
 
-            distanceToTargetInches = distanceToGoal - kTargetDistanceThresholdFromCenterInches;   // distance from camera
-            bearingToTarget = bearingToGoal;
+            distanceToTargetInches = 120; //distanceToGoal - kTargetDistanceThresholdFromCenterInches;   // distance from camera
+            bearingToTarget = Limelight.getInstance().getTargetHorizontalAngleRad(); //bearingToGoal;
+            SmartDashboard.putNumber("BearingToTarget", bearingToTarget); //========================
 
             // Calculate motor settings to turn towards target
             lookaheadDist = Math.min(kLookaheadDist, distanceToTargetInches);	// length of chord <= kLookaheadDist
@@ -121,11 +126,14 @@ public class VisionDriveAssistant
 
             // calculate left/right motor speeds for this approach speed & curvature
             wheelSpeed = Kinematics.inverseKinematicsFromSpeedCurvature(approachSpeed, curvature);
+        
 
             if (enabled)
             {
                 // adjust drive command
                 driveCmd.setMotors(wheelSpeed);
+                SmartDashboard.putNumber("Left Wheel", wheelSpeed.left); //========================
+                SmartDashboard.putNumber("Right Wheel", wheelSpeed.right); //========================
             }
         }
         else

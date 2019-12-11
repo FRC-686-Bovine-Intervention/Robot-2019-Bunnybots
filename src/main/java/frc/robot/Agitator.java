@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
+import frc.robot.subsystems.Shooter;
 
 
 
@@ -43,7 +44,7 @@ public class Agitator
     public static double kKdSpeed = 10000;	// to resolve any overshoot, start at 10*Kp 
     
     public static final double kKfPos = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
-    public static double kKpPos = 7;
+    public static double kKpPos = 5; // was 7
     public static double kKiPos = 0;
     public static double kKdPos = 10000;
     
@@ -58,7 +59,7 @@ public class Agitator
     public static final double timeToCruiseVelocity = 0.1;  // seconds
     public static final double kMaxAcceleration = kCruiseVelocity /timeToCruiseVelocity;
     
-    public static final int kAllowableError = (int)rpmToEncoderUnitsPerFrame(10);
+    public static final int kAllowableError = (int)rpmToEncoderUnitsPerFrame(15);
     public static final int kAllowableErrorPos = 1;
 
     public static final int kPeakCurrentLimit = 30;
@@ -124,7 +125,7 @@ public class Agitator
         double encoderSpeed = rpmToEncoderUnitsPerFrame(rpm);
         agitatorMotor.selectProfileSlot(kSlotIdxSpeed, Constants.kTalonPidIdx); 
         agitatorMotor.set(ControlMode.Velocity, encoderSpeed);
-        SmartDashboard.putNumber("Agitator Raw Speed", encoderSpeed);
+        SmartDashboard.putNumber("Agitator/Raw Speed", encoderSpeed);
     }
 
     public void shootBalls(int balls)
@@ -138,7 +139,7 @@ public class Agitator
         agitatorMotor.setNeutralMode(NeutralMode.Brake);
         agitatorMotor.selectProfileSlot(kSlotIdxPos, Constants.kTalonPidIdx); 
         agitatorMotor.set(ControlMode.MotionMagic, degreesToEncoderUnits(deg));
-        SmartDashboard.putNumber("Agitator Raw Angle", degreesToEncoderUnits(deg));
+        SmartDashboard.putNumber("Agitator/Raw Angle", degreesToEncoderUnits(deg));
     }
 
     public double getAngleDegError()
@@ -152,6 +153,10 @@ public class Agitator
         SmartDashboard.putNumber("Agitator/errorAngleDeg",errorAngleDeg);
 
         return Math.abs(errorAngleDeg);
+    }
+
+    public boolean nearTarget(){
+        return getAngleDegError() < kAllowableErrorPos;
     }
 
     public void setPIDValues(double P, double I, double D)
@@ -171,17 +176,18 @@ public class Agitator
     public void run()
     {
         SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
-        if (driverControls.getBoolean(DriverControlsEnum.SHOOT))
+        if (driverControls.getBoolean(DriverControlsEnum.SHOOT) && Shooter.getInstance().nearTarget(true))
         {
             setSpeed(60);
         }
-        else
+        else if (driverControls.getBoolean(DriverControlsEnum.UNJAM))
+        {
+            setSpeed(-30);
+        } 
+        else 
         {
             setSpeed(0);
         }
-        // SmartDashboard.putNumber("Current P", kKpSpeed);
-        // SmartDashboard.putNumber("Current I", kKiSpeed);
-        // SmartDashboard.putNumber("Current D", kKdSpeed);
     }
     
     public void zeroSensors()

@@ -22,7 +22,7 @@ public class ShootBallAction implements Action {
 
     @Override
     public void update() {
-        finished = agitator.getAngleDegError() < 1.0;
+        finished = agitator.nearTarget();
     }
 
     @Override

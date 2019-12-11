@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.auto.AutoModeExecuter;
 import frc.robot.command_status.DriveCommand;
 import frc.robot.command_status.RobotState;
+import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
 import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogController;
@@ -84,10 +85,10 @@ public class Robot extends TimedRobot {
 
     selectedDriverControls.setDriverControls( smartDashboardInteractions.getDriverControlsSelection() );
     shooter = Shooter.getInstance();
-    SmartDashboard.putNumber("ShooterRPM", 0);
-    SmartDashboard.putBoolean("Shooter Debug", false);
-    SmartDashboard.putNumber("AgitatorDegree", 0);
-    SmartDashboard.putBoolean("Agitator Debug", false);
+    SmartDashboard.putNumber("Shooter/RPM", 0);
+    SmartDashboard.putBoolean("Shooter/Debug", false);
+    SmartDashboard.putNumber("Agitator/Degree", 0);
+    SmartDashboard.putBoolean("Agitator/Debug", false);
     robotLogger = DataLogController.getRobotLogController();
     robotLogger.register(this.getLogger());
   }
@@ -187,7 +188,6 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     loopController.start();
     camera.teleopInit();
-
   }
   /**
    * This function is called periodically during operator control.
@@ -195,17 +195,23 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
-    DriveCommand driveCmd = selectedDriverControls.getDriveCommand();
-    drive.setOpenLoop(driveCmd);
+
+    boolean visionButton = selectedDriverControls.getBoolean(DriverControlsEnum.DRIVE_ASSIST);
+
+		DriveCommand driveCmd = selectedDriverControls.getDriveCommand();
+		driveCmd = visionDriveAssistant.assist(driveCmd, visionButton);
+
+		//modify drive controls based on buttons
+		drive.setOpenLoop(driveCmd);
 
     agitator.run();
     shooter.run();
+    intake.run();
 
 
-
-    if (SmartDashboard.getBoolean("Agitator Debug", false))
+    if (SmartDashboard.getBoolean("Agitator/Debug", false))
     {
-      double agitatorSet = SmartDashboard.getNumber("AgitatorDegree", 0);
+      double agitatorSet = SmartDashboard.getNumber("Agitator/Degree", 0);
       agitator.setDegree(agitatorSet);
     }
   }
