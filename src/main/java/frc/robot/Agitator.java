@@ -6,6 +6,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
@@ -65,6 +66,8 @@ public class Agitator
     public static final int kPeakCurrentLimit = 30;
     public static final int kPeakCurrentDuration = 200;
     public static final int kContinuousCurrentLimit = 20;
+
+    public boolean shooterChecked = false;
 
     private double targetAngle = 0.0;
 
@@ -176,18 +179,22 @@ public class Agitator
     public void run()
     {
         SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
-        if (driverControls.getBoolean(DriverControlsEnum.SHOOT) && Shooter.getInstance().nearTarget(true))
+        if (driverControls.getBoolean(DriverControlsEnum.SHOOT) && (Shooter.getInstance().nearTarget(true) || shooterChecked))
         {
             setSpeed(60);
+            shooterChecked = true;
         }
         else if (driverControls.getBoolean(DriverControlsEnum.UNJAM))
         {
             setSpeed(-30);
+            shooterChecked = false;
         } 
         else 
         {
             setSpeed(0);
+            shooterChecked = false;
         }
+        SmartDashboard.putBoolean("Shooter Checked", shooterChecked);
     }
     
     public void zeroSensors()

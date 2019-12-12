@@ -5,6 +5,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.lib.joystick.DriverControlsBase;
 import frc.robot.lib.joystick.DriverControlsEnum;
@@ -30,6 +31,9 @@ public class Intake extends Subsystem implements Loop
     private int kSlotId = 0;
     private double kF = 0, kP = 0.5, kI = 0, kD = 1;
     private int kAllowableError = 10;
+    private static final double extendedTime = 1;
+    private double startTime;
+    private boolean timerStarted = false;
 
 
     public Intake(){
@@ -61,6 +65,7 @@ public class Intake extends Subsystem implements Loop
         if (driverControls.getBoolean(DriverControlsEnum.INTAKE))
         {
             set(+Constants.kIntakeVoltage);
+            timerStarted = false;
         }
         else if (driverControls.getBoolean(DriverControlsEnum.OUTTAKE))
         {
@@ -68,7 +73,13 @@ public class Intake extends Subsystem implements Loop
         }
         else 
         {
-            stop();
+            if(!timerStarted){
+                startTime = Timer.getFPGATimestamp();
+                timerStarted = true;
+            }
+            if((Timer.getFPGATimestamp()-startTime) >= extendedTime){
+                stop();
+            }
         }
     }
 
@@ -86,7 +97,7 @@ public class Intake extends Subsystem implements Loop
         }
         else 
         {
-            stop();
+            //stop(); //This is commented because it is conflicting with run();
         }
     }
 

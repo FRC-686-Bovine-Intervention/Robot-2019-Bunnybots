@@ -17,6 +17,7 @@ import frc.robot.command_status.RobotState;
 import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
 import frc.robot.lib.sensors.Limelight;
+import frc.robot.lib.sensors.Limelight.LedMode;
 import frc.robot.lib.util.DataLogController;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Pose;
@@ -195,6 +196,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
+    SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
 
     boolean visionButton = selectedDriverControls.getBoolean(DriverControlsEnum.DRIVE_ASSIST);
 
@@ -204,15 +206,22 @@ public class Robot extends TimedRobot {
 		//modify drive controls based on buttons
 		drive.setOpenLoop(driveCmd);
 
-    agitator.run();
     shooter.run();
+    agitator.run();
     intake.run();
-
 
     if (SmartDashboard.getBoolean("Agitator/Debug", false))
     {
       double agitatorSet = SmartDashboard.getNumber("Agitator/Degree", 0);
       agitator.setDegree(agitatorSet);
+    }
+    if (driverControls.getBoolean(DriverControlsEnum.DRIVE_ASSIST)||driverControls.getBoolean(DriverControlsEnum.SHOOT))
+    {
+      camera.setLEDMode(LedMode.kOn);
+    }
+    else
+    {
+      camera.setLEDMode(LedMode.kOff);
     }
   }
 

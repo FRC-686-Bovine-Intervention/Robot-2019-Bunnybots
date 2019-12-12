@@ -2,10 +2,12 @@ package frc.robot.auto.modes;
 
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
+import frc.robot.auto.actions.LimelightLEDAction;
 import frc.robot.auto.actions.SetShooterSpeedAction;
 import frc.robot.auto.actions.ShootBallAction;
 import frc.robot.auto.actions.StopShooterAction;
 import frc.robot.auto.actions.WaitAction;
+import frc.robot.lib.sensors.Limelight.LedMode;
 import frc.robot.subsystems.Shooter;
 
 public class BunnybotsAuto extends AutoModeBase {
@@ -17,6 +19,8 @@ public class BunnybotsAuto extends AutoModeBase {
     @Override
     protected void routine() throws AutoModeEndedException {
         System.out.println("Start BunnybotsAuto");
+        // Turn on Limelight
+        runAction(new LimelightLEDAction(LedMode.kOn));
 
         // Shoot Bunny at high goal
         System.out.println("Set Shooter Speed for High Goal, Bunny Ball");
@@ -49,7 +53,8 @@ public class BunnybotsAuto extends AutoModeBase {
 
         System.out.println("Stop Shooter");
         runAction(new StopShooterAction());
-
-
+        
+        // Turn off Limelight
+        runAction(new LimelightLEDAction(LedMode.kOff));
     }
 }
