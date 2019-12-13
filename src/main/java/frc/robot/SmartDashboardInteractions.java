@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.modes.BunnybotsAuto;
+import frc.robot.auto.modes.MovementAuto;
 import frc.robot.auto.modes.ShooterMode;
 import frc.robot.auto.modes.StandStillMode;
 import frc.robot.lib.joystick.DriverControlsBase;
@@ -64,6 +65,7 @@ public class SmartDashboardInteractions
         autoModeChooser = new SendableChooser<AutoModeOption>();
         autoModeChooser.setDefaultOption(AutoModeOption.BUNNYBOTS_AUTO.toString(), AutoModeOption.BUNNYBOTS_AUTO);
         autoModeChooser.addOption(AutoModeOption.BUNNYBOTS_AUTO.toString(), AutoModeOption.BUNNYBOTS_AUTO);
+        autoModeChooser.addOption(AutoModeOption.MOVEMENT_AUTO.toString(), AutoModeOption.MOVEMENT_AUTO);
         SmartDashboard.putData("Auto Selection", autoModeChooser);
     }
 
@@ -148,7 +150,8 @@ public class SmartDashboardInteractions
 
     enum AutoModeOption
     {
-        BUNNYBOTS_AUTO("Bunnybots Auto");
+        BUNNYBOTS_AUTO("Bunnybots Auto"),
+        MOVEMENT_AUTO("Movement Auto");
     
         public final String name;
     
@@ -165,6 +168,9 @@ public class SmartDashboardInteractions
     	{
         case BUNNYBOTS_AUTO:
             return new BunnybotsAuto(); 
+
+        case MOVEMENT_AUTO:
+            return new MovementAuto();
 			
     	default:
             System.out.println("ERROR: unexpected auto mode: " + autoMode);

@@ -68,7 +68,7 @@ public class DriveLoop implements Loop
 	// Wheels
 	public static double kDriveWheelCircumInches    = 18.800;
 	public static double kTrackLengthInches         = 17.500;
-	public static double kTrackWidthInches          = 26.000;
+	public static double kTrackWidthInches          = 23.500;
 	public static double kTrackEffectiveDiameter    = (kTrackWidthInches * kTrackWidthInches + kTrackLengthInches * kTrackLengthInches) / kTrackWidthInches;;
 	public static double kTrackScrubFactor          = 0.5;
 

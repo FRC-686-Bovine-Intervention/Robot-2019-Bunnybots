@@ -7,7 +7,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.GyroBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,6 +19,7 @@ import frc.robot.command_status.RobotState;
 import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
 import frc.robot.lib.sensors.Limelight;
+import frc.robot.lib.sensors.NavX;
 import frc.robot.lib.sensors.Limelight.LedMode;
 import frc.robot.lib.util.DataLogController;
 import frc.robot.lib.util.DataLogger;
@@ -155,6 +158,8 @@ public class Robot extends TimedRobot {
     boolean logToFile = false;
     boolean logToSmartDashboard = true;
     robotLogger.setOutputMode(logToFile, logToSmartDashboard);
+
+    NavX.getInstance().zeroSensor();
 
     loopController.start();
 		Shuffleboard.startRecording();

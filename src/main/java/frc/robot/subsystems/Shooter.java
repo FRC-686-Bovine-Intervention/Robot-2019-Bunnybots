@@ -196,6 +196,9 @@ public class Shooter implements Loop
         if (driverControls.getBoolean(DriverControlsEnum.TARGET_LOW))
         {
             goal = GoalEnum.LOW_GOAL;
+            Limelight.getInstance().setPipeline(1);
+        } else {
+            Limelight.getInstance().setPipeline(0);
         }
 
         if (!SmartDashboard.getBoolean("Shooter/Debug", false))

@@ -18,6 +18,7 @@ public class NavX extends GyroBase
 	}
 	
 	 AHRS ahrs;
+	 private double initAngle;
 	
     // The SPI port the NavX is connected to
     // (see https://www.pdocs.kauailabs.com/navx-mxp/guidance/selecting-an-interface/)
@@ -37,7 +38,12 @@ public class NavX extends GyroBase
 	 *
 	 */
 	public double getHeadingDeg() {
-		return -ahrs.getAngle();	// sign correction so that heading increases as robot turns to the left	 
+		return ahrs.getAngle() - initAngle;	// sign correction so that heading increases as robot turns to the left	 
+	}
+
+	@Override
+	public void zeroSensor() {
+		initAngle = ahrs.getAngle();
 	}
 	
 	public double getWorldLinearAccelerationX(){
