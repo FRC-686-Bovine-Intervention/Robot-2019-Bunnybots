@@ -1,38 +1,48 @@
 package frc.robot.auto.actions;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.command_status.DriveCommand;
+import frc.robot.lib.sensors.NavX;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.subsystems.Drive;
 
-public class TimedDriveStraightAction implements Action {
+public class DriveToAngle implements Action {
 
+    private double targetAngle;
+    private double time;
     private double power;
-    private double targetTime;
-    private double startTime;
-
-    private boolean finished = false;
+    private DriveCommand driveCommand;
     private Drive mDrive = Drive.getInstance();
+    private double startTime;
+    private boolean finished = false;
+    
+    private static final double kCorrectionCoefficient = 0.01; //power per degree error
 
-
-    public TimedDriveStraightAction(double power, double timeSeconds){
+    public DriveToAngle(double power, double angle, double timeSeconds) {
+        this.targetAngle = angle;
+        this.time = timeSeconds;
         this.power = power;
-        this.targetTime = timeSeconds;
     }
 
     @Override
     public void start() {
+        driveCommand = new DriveCommand(power, power);
+        mDrive.setOpenLoop(driveCommand);
+
         startTime = Timer.getFPGATimestamp();
-        mDrive.setOpenLoop(new DriveCommand(power, power));
     }
 
     @Override
     public void update() {
-        mDrive.setOpenLoop(new DriveCommand(power, power));
-        if(Timer.getFPGATimestamp()-startTime >= targetTime){
+        double error = targetAngle - NavX.getInstance().getHeadingDeg();
+        double correction = error * kCorrectionCoefficient;
+        driveCommand.setMotors(power-correction, power+correction);;
+        mDrive.setOpenLoop(driveCommand);
+
+        if(Timer.getFPGATimestamp()-startTime >= time){
             finished = true;
-            System.out.println("Finished");
         }
     }
 

@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.modes.BunnybotsAuto;
 import frc.robot.auto.modes.MovementAuto;
-import frc.robot.auto.modes.ShooterMode;
 import frc.robot.auto.modes.StandStillMode;
 import frc.robot.lib.joystick.DriverControlsBase;
 import frc.robot.lib.joystick.DriverControlsThrustmaster;
@@ -67,6 +66,13 @@ public class SmartDashboardInteractions
         autoModeChooser.addOption(AutoModeOption.BUNNYBOTS_AUTO.toString(), AutoModeOption.BUNNYBOTS_AUTO);
         autoModeChooser.addOption(AutoModeOption.MOVEMENT_AUTO.toString(), AutoModeOption.MOVEMENT_AUTO);
         SmartDashboard.putData("Auto Selection", autoModeChooser);
+
+        autoSideChooser = new SendableChooser<AutoSideSelection>();
+        autoSideChooser.setDefaultOption(AutoSideSelection.LEFT_SIDE.toString(), AutoSideSelection.LEFT_SIDE);
+        autoSideChooser.addOption(AutoSideSelection.RIGHT_SIDE.toString(), AutoSideSelection.RIGHT_SIDE);
+        autoSideChooser.addOption(AutoSideSelection.LEFT_SIDE.toString(), AutoSideSelection.LEFT_SIDE);
+        SmartDashboard.putData("Side Selection", autoSideChooser);
+        
     }
 
         
@@ -176,6 +182,30 @@ public class SmartDashboardInteractions
             System.out.println("ERROR: unexpected auto mode: " + autoMode);
 			return new StandStillMode();
     	}
+    }
+
+
+
+
+    SendableChooser<AutoSideSelection> autoSideChooser;
+
+    public enum AutoSideSelection {
+    
+        //Left Looking at the goals
+        LEFT_SIDE("Left Side"),
+        RIGHT_SIDE("Right Side");
+
+        public final String selection;
+
+        AutoSideSelection(String selection){
+            this.selection = selection;
+        }
+    }
+
+
+    public AutoSideSelection getAutoSide(){
+        AutoSideSelection selection = (AutoSideSelection)autoSideChooser.getSelected();
+        return selection;
     }
     
 }

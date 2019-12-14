@@ -20,7 +20,7 @@ public class CurvedDriveAction implements Action {
     private WheelSpeed speed;
     private DriveCommand driveCommand;
 
-    public static final double allowableError = 5;
+    public static final double allowableError = 10;
 
     private boolean finished = false;
     private Drive mDrive = Drive.getInstance();
@@ -56,6 +56,9 @@ public class CurvedDriveAction implements Action {
 
     @Override
     public void done() {
+        driveCommand.setNeutralMode(NeutralMode.Coast);
+        driveCommand.setMotors(0, 0);
+        mDrive.setOpenLoop(driveCommand);
     }
 
     private final DataLogger logger = new DataLogger()

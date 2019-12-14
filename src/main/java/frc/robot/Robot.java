@@ -24,6 +24,7 @@ import frc.robot.lib.sensors.Limelight.LedMode;
 import frc.robot.lib.util.DataLogController;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Pose;
+import frc.robot.lib.util.Vector2d;
 import frc.robot.loops.DriveLoop;
 import frc.robot.loops.GoalStateLoop;
 import frc.robot.loops.LoopController;
@@ -93,6 +94,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Shooter/Debug", false);
     SmartDashboard.putNumber("Agitator/Degree", 0);
     SmartDashboard.putBoolean("Agitator/Debug", false);
+
     robotLogger = DataLogController.getRobotLogController();
     robotLogger.register(this.getLogger());
   }
@@ -200,6 +202,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    SmartDashboard.putNumber("Gyro reading", NavX.getInstance().getHeadingDeg());
+
     selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
     SelectedDriverControls driverControls = SelectedDriverControls.getInstance();
 

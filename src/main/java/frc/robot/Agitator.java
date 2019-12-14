@@ -45,7 +45,7 @@ public class Agitator
     public static double kKdSpeed = 10000;	// to resolve any overshoot, start at 10*Kp 
     
     public static final double kKfPos = kCalMaxPercentOutput * 1023.0 / kCalMaxEncoderPulsePer100ms;
-    public static double kKpPos = 5; // was 7
+    public static double kKpPos = 7; // was 7
     public static double kKiPos = 0;
     public static double kKdPos = 10000;
     
@@ -56,7 +56,7 @@ public class Agitator
     public static final double kQuadEncoderStatusFramePeriod = 0.100; // 100 ms
     public static final double kQuadEncoderUnitsPerDeg = kQuadEncoderUnitsPerRev/360;
     
-    public static final double kCruiseVelocity = rpmsToEncoderUnitsPerFramePerSec(30.0);		// cruise below top speed
+    public static final double kCruiseVelocity = rpmsToEncoderUnitsPerFramePerSec(30.0);		// cruise below top speed; wasa 30
     public static final double timeToCruiseVelocity = 0.1;  // seconds
     public static final double kMaxAcceleration = kCruiseVelocity /timeToCruiseVelocity;
     
