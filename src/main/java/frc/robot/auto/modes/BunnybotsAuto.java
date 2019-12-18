@@ -33,51 +33,43 @@ public class BunnybotsAuto extends AutoModeBase {
         // Turn on Limelight
         runAction(new LimelightLEDAction(LedMode.kOn));
 
-        // // Shoot Bunny at high goal
-        // System.out.println("Set Shooter Speed for High Goal, Bunny Ball");
-        // runAction(new SetShooterSpeedAction(Shooter.GoalEnum.BUNNY_HIGH_GOAL));
-        // System.out.println("Shoot 1 Ball");
-        // int numBalls = 1;
-        // runAction(new ShootBallAction(numBalls));
-        // System.out.println("Wait for Ball to Shoot");
-        // runAction(new WaitAction(2.0));     // wait for  motor to change speeds
-
 //Start Here
         
         // Shoot at high goal
         System.out.println("Set Shooter Speed for High Goal");
+        Limelight.getInstance().setPipeline(0);
         runAction(new SetShooterSpeedAction(Shooter.GoalEnum.HIGH_GOAL));
-        System.out.println("Shoot 3 Balls");
-        int numBalls = 3;
+        System.out.println("Shoot 5 Balls");
+        int numBalls = 5;
         runAction(new ShootBallAction(numBalls));
         System.out.println("Wait for Ball to Shoot");
         runAction(new WaitAction(2.0));     // wait for  motor to change speeds
 
 
         // this is where we move to the low goal
-        if(side == AutoSideSelection.LEFT_SIDE){
-            runAction(new CurvedDriveAction(-0.3, 31.25, -90));
-            runAction(new CurvedDriveAction(-0.3, -31.25, 30));
-        }
-        if(side == AutoSideSelection.RIGHT_SIDE){
-            runAction(new CurvedDriveAction(-0.3, -31.25, 90));
-            runAction(new CurvedDriveAction(-0.3, 31.25,  -10));
-        }
+        // if(side == AutoSideSelection.LEFT_SIDE){
+        //     runAction(new CurvedDriveAction(-0.3, 31.25, -90));
+        //     runAction(new CurvedDriveAction(-0.3, -31.25, 30));
+        // }
+        // if(side == AutoSideSelection.RIGHT_SIDE){
+        //     runAction(new CurvedDriveAction(-0.3, -31.25, 90));
+        //     runAction(new CurvedDriveAction(-0.3, 31.25,  -10));
+        // }
         
         
-        Limelight.getInstance().setPipeline(1);
-        runAction(new WaitAction(0.5)); 
-        //Approaching Low goal
-        runAction(new VisionDriveAction(0.25));
+        // Limelight.getInstance().setPipeline(1);
+        // runAction(new WaitAction(0.5)); 
+        // //Approaching Low goal
+        // runAction(new VisionDriveAction(0.25));
 
-        // Shoot at low goal
-        System.out.println("Set Shooter Speed for Low Goal");
-        runAction(new SetShooterSpeedAction(Shooter.GoalEnum.LOW_GOAL));
-        System.out.println("Shoot 2 Balls");
-        numBalls = 2;
-        runAction(new ShootBallAction(numBalls));
-        System.out.println("Wait for Ball to Shoot");
-        runAction(new WaitAction(2.0));     // wait for  motor to change speeds
+        // // Shoot at low goal
+        // System.out.println("Set Shooter Speed for Low Goal");
+        // runAction(new SetShooterSpeedAction(Shooter.GoalEnum.LOW_GOAL));
+        // System.out.println("Shoot 2 Balls");
+        // numBalls = 2;
+        // runAction(new ShootBallAction(numBalls));
+        // System.out.println("Wait for Ball to Shoot");
+        // runAction(new WaitAction(2.0));     // wait for  motor to change speeds
 
         System.out.println("Stop Shooter");
         runAction(new StopShooterAction());

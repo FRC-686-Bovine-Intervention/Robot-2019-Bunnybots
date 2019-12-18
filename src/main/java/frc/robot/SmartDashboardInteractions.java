@@ -8,6 +8,7 @@ import frc.robot.auto.modes.MovementAuto;
 import frc.robot.auto.modes.StandStillMode;
 import frc.robot.lib.joystick.DriverControlsBase;
 import frc.robot.lib.joystick.DriverControlsThrustmaster;
+import frc.robot.lib.joystick.DriverControlsThrustmasterRight;
 import frc.robot.lib.joystick.DriverControlsXbox;
 
 /**
@@ -38,6 +39,7 @@ public class SmartDashboardInteractions
     	driverControlsChooser = new SendableChooser<DriverControlsOption>();
     	driverControlsChooser.addOption(DriverControlsOption.XBOX_ARCADE.name,        DriverControlsOption.XBOX_ARCADE);
         driverControlsChooser.setDefaultOption(DriverControlsOption.THRUSTMASTER_ARCADE.name,  DriverControlsOption.THRUSTMASTER_ARCADE);
+        driverControlsChooser.addOption(DriverControlsOption.THRUSTMASTER_RIGHTHANDED.name, DriverControlsOption.THRUSTMASTER_RIGHTHANDED);
     	// driverControlsChooser.addOption(DriverControlsOption.ARCADE.name,        DriverControlsOption.ARCADE);
 		// driverControlsChooser.addOption(DriverControlsOption.TRIGGER.name,        DriverControlsOption.TRIGGER);
     	// driverControlsChooser.addOption(DriverControlsOption.TANK.name, 	      DriverControlsOption.TANK);
@@ -83,7 +85,8 @@ public class SmartDashboardInteractions
     enum DriverControlsOption 
     {
         XBOX_ARCADE("Xbox  Arcade"),
-        THRUSTMASTER_ARCADE("Thrustmaster  Arcade");
+        THRUSTMASTER_ARCADE("Thrustmaster  Arcade"),
+        THRUSTMASTER_RIGHTHANDED("Right Thrustmaster Arcade");
         // ARCADE("Arcade"),
         // TRIGGER("Trigger"),				// works for Xbox controller and Xbox steering wheel
         // TANK("Tank"),
@@ -114,9 +117,13 @@ public class SmartDashboardInteractions
 		case XBOX_ARCADE:
            return new DriverControlsXbox();
 
+        case THRUSTMASTER_RIGHTHANDED:
+           return new DriverControlsThrustmasterRight();
+
         case THRUSTMASTER_ARCADE:
         default:
             return new DriverControlsThrustmaster(); 
+
 
 }   
     }

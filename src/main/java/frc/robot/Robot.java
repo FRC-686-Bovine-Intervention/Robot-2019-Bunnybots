@@ -203,6 +203,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     SmartDashboard.putNumber("Gyro reading", NavX.getInstance().getHeadingDeg());
+    if(Limelight.getInstance().getPipeline() !=0){
+      Limelight.getInstance().setPipeline(0);
+    }
 
     selectedDriverControls.setDriverControls(smartDashboardInteractions.getDriverControlsSelection());
     SelectedDriverControls driverControls = SelectedDriverControls.getInstance();

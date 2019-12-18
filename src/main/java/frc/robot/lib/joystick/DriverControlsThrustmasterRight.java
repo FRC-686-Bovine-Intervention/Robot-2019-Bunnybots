@@ -4,17 +4,17 @@ import frc.robot.command_status.DriveCommand;
 import frc.robot.lib.joystick.SteeringLib.DeadbandNonLinearity;
 import frc.robot.lib.joystick.SteeringLib.NonLinearityEnum;
 import frc.robot.lib.util.DataLogger;
+import frc.robot.subsystems.Drive;
 
 
-
-public class DriverControlsXbox extends DriverControlsBase
+public class DriverControlsThrustmasterRight extends DriverControlsBase
 {
 	// singleton class
-    private static DriverControlsXbox instance = null;
-    public static DriverControlsXbox getInstance() 
+    private static DriverControlsThrustmasterRight instance = null;
+    public static DriverControlsThrustmasterRight getInstance() 
     { 
         if (instance == null) {
-            instance = new DriverControlsXbox();
+            instance = new DriverControlsThrustmasterRight();
         }
         return instance;
     }
@@ -33,9 +33,9 @@ public class DriverControlsXbox extends DriverControlsBase
     // button board constants
     // public static int kCargoIntakeRocketButton =    ButtonBoard.kButtonB;
  
-    public DriverControlsXbox() 
+    public DriverControlsThrustmasterRight() 
     {
-        controller = new Xbox(kControllerPort);
+        controller = new Thrustmaster(kControllerPort);
         buttonBoard = new ButtonBoard(kButtonBoardPort);
 
         double throttleDeadband =     0.02;
@@ -54,14 +54,18 @@ public class DriverControlsXbox extends DriverControlsBase
 
     public boolean getBoolean( DriverControlsEnum _control ) 
     {
+        // intake when: driving forward or turning, when outtake button is not pressed
+        //              (so no intake when driving backwards or stopped)
+        DriveCommand driveCmd = Drive.getInstance().getCommand();
+
         switch (_control)
         {
-            case INTAKE:                        return controller.getButton(Xbox.kButtonA);
-            case OUTTAKE:                       return controller.getButton(Xbox.kButtonX);
-            case SHOOT:                         return controller.getAxisAsButton(Xbox.kRTriggerAxis);
-            case TARGET_LOW:                    return controller.getButton(Xbox.kButtonRB) && !controller.getAxisAsButton(Xbox.kRTriggerAxis);
-            case UNJAM:                         return controller.getButton(Xbox.kButtonY);
-            case DRIVE_ASSIST:                  return controller.getButton(Xbox.kButtonLB);
+            case INTAKE:                        return !controller.getButton(Thrustmaster.kTopButton4) && (controller.getPOV()==0);//!controller.getButton(Thrustmaster.kTopButton4) && (driveCmd.getLeftMotor() > 0.1 || driveCmd.getRightMotor() > 0.1);
+            case OUTTAKE:                       return controller.getPOV()==180;
+            case SHOOT:                         return !controller.getButton(Thrustmaster.kTopButton3) && controller.getButton(Thrustmaster.kTriggerButton) || controller.getButton(Thrustmaster.kBottomThumbButton);
+            case TARGET_LOW:                    return controller.getButton(Thrustmaster.kBottomThumbButton) && !controller.getButton(Thrustmaster.kTriggerButton);
+            case UNJAM:                         return controller.getButton(Thrustmaster.kRightThumbButton);
+            case DRIVE_ASSIST:                  return controller.getButton(Thrustmaster.kLeftThumbButton);
             case QUICK_TURN:                    return false;
             default:                            return false;
         }

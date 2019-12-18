@@ -26,7 +26,7 @@ public class Constants extends ConstantsBase {
     public static int kTalonTimeoutMs = 5; // ms
     public static int kTalonPidIdx = 0; // 0 for non-cascaded PIDs, 1 for cascaded PIDs
     
-    public static double kIntakeVoltage = 0.85; 
+    public static double kIntakeVoltage = 0.9; //Was 0.85
     
     public static double kNominalBatteryVoltage = 12.0;
 

@@ -17,7 +17,7 @@ public class VisionDriveAction implements Action {
     private DriveCommand visionCommand;
     private VisionDriveAssistant visionDriveAssistant;
     double speed = 0.25;
-    double stopCameraAngleThreshold = -9;
+    double stopCameraAngleThreshold = -10; //Was -9
 
 
     public VisionDriveAction(double power){
