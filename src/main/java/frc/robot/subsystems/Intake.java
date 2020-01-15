@@ -106,8 +106,6 @@ public class Intake extends Subsystem implements Loop
         stop();
     }
 
-
-
     public void set(double speed)
     {
         intakeMotor.set(ControlMode.PercentOutput, speed);

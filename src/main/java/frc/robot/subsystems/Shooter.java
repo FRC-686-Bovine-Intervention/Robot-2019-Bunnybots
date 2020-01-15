@@ -4,8 +4,10 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 import frc.robot.lib.joystick.DriverAxisEnum;
 import frc.robot.lib.joystick.DriverControlsEnum;
 import frc.robot.lib.joystick.SelectedDriverControls;
@@ -13,11 +15,9 @@ import frc.robot.lib.sensors.Limelight;
 import frc.robot.lib.util.DataLogger;
 import frc.robot.lib.util.Vector2d;
 import frc.robot.loops.Loop;
-import frc.robot.Constants;
 
-public class Shooter implements Loop
-{
-	// singleton class
+public class Shooter implements Loop {
+    // singleton class
     private static Shooter instance = null;
 
     public static Shooter getInstance() {
@@ -31,6 +31,7 @@ public class Shooter implements Loop
     // Members
     //====================================================
     public TalonSRX shooterMotor;
+    public VictorSPX shooterSlave;
     public Limelight camera = Limelight.getInstance();
     public double speed;
 
@@ -129,6 +130,10 @@ public class Shooter implements Loop
         shooterMotor.configPeakCurrentDuration(kPeakCurrentDuration, Constants.kTalonTimeoutMs);
         shooterMotor.configContinuousCurrentLimit(kContinuousCurrentLimit, Constants.kTalonTimeoutMs);
         shooterMotor.enableCurrentLimit(true);
+
+        // slave stuff
+        shooterSlave.follow(shooterMotor);
+        shooterSlave.setInverted(false);
     }
 
 

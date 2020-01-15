@@ -59,8 +59,8 @@ public class Robot extends TimedRobot {
   Limelight camera = Limelight.getInstance();
 
   Shooter shooter;
-  Intake intake;
-  Agitator agitator;
+  //Intake intake;
+ // Agitator agitator;
   SmartDashboardInteractions smartDashboardInteractions = SmartDashboardInteractions.getInstance();
 
   DataLogController robotLogger;
@@ -73,8 +73,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     shooter = Shooter.getInstance();
-    intake = Intake.getInstance();
-    agitator = Agitator.getInstance();
+    //intake = Intake.getInstance();
+    //agitator = Agitator.getInstance();
 
 
     loopController = new LoopController();
@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
     loopController.register(VisionLoop.getInstance());
     loopController.register(GoalStateLoop.getInstance());
     loopController.register(Shooter.getInstance());
-    loopController.register(Intake.getInstance());
+    //loopController.register(Intake.getInstance());
     //loopController.register(Agitator.getInstance()); //Agitator is not yet set up with the loop interface
 
 
@@ -219,22 +219,22 @@ public class Robot extends TimedRobot {
 		drive.setOpenLoop(driveCmd);
 
     shooter.run();
-    agitator.run();
-    intake.run();
+    //agitator.run();
+   // intake.run();
 
-    if (SmartDashboard.getBoolean("Agitator/Debug", false))
-    {
-      double agitatorSet = SmartDashboard.getNumber("Agitator/Degree", 0);
-      agitator.setDegree(agitatorSet);
-    }
-    if (driverControls.getBoolean(DriverControlsEnum.DRIVE_ASSIST)||driverControls.getBoolean(DriverControlsEnum.SHOOT))
-    {
-      camera.setLEDMode(LedMode.kOn);
-    }
-    else
-    {
-      camera.setLEDMode(LedMode.kOff);
-    }
+  //   if (SmartDashboard.getBoolean("Agitator/Debug", false))
+  //   {
+  //     double agitatorSet = SmartDashboard.getNumber("Agitator/Degree", 0);
+  //     agitator.setDegree(agitatorSet);
+  //   }
+  //   if (driverControls.getBoolean(DriverControlsEnum.DRIVE_ASSIST)||driverControls.getBoolean(DriverControlsEnum.SHOOT))
+  //   {
+  //     camera.setLEDMode(LedMode.kOn);
+  //   }
+  //   else
+  //   {
+  //     camera.setLEDMode(LedMode.kOff);
+  //   }
   }
 
   /**
@@ -254,14 +254,14 @@ public class Robot extends TimedRobot {
   public void zeroAllSensors()
   {
     drive.zeroSensors();
-    agitator.zeroSensors();
+  //  agitator.zeroSensors();
   }
   
   public void stopAll()
   {
     drive.stop();
-    intake.stop();
-    agitator.stop();
+   // intake.stop();
+   // agitator.stop();
     shooter.stop();
   }
 

@@ -48,7 +48,9 @@ public class DriverControlsXbox extends DriverControlsBase
 
     public DriveCommand getDriveCommand() 
     {
-        return steeringControls.getDriveCommand(); 
+        DriveCommand drvCmd = steeringControls.getDriveCommand();
+        drvCmd.setMotors(0.8*drvCmd.getLeftMotor(), 0.8*drvCmd.getRightMotor());
+        return drvCmd;
     }
 
 
