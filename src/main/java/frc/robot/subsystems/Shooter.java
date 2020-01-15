@@ -98,6 +98,7 @@ public class Shooter implements Loop {
     public Shooter() 
     {
         shooterMotor = new TalonSRX(Constants.kShooterTalonId);
+        shooterSlave = new VictorSPX(Constants.kShooterSlaveId);
 
         //====================================================
         // Configure Deploy Motors

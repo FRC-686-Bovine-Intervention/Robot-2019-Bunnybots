@@ -36,9 +36,10 @@ public class Constants extends ConstantsBase {
     public static int kLeftMotorSlave1TalonId =     2;
     public static int kRightMotorMasterTalonId =    3;
     public static int kRightMotorSlave1TalonId =    4;
-    public static int kShooterTalonId =             5; 
-    public static int kIntakeTalonId =              6;  
-    public static int kAgitatorTalonId =            7;   
+    public static int kShooterTalonId =             31;
+    public static int kShooterSlaveId =             32;
+    public static int kIntakeTalonId =              6;
+    public static int kAgitatorTalonId =            7;
     
 
     // Gyro
